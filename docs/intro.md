@@ -21,4 +21,4 @@ For background on these studies, please see cohort profile papers (linked above)
 
 Most of the data is available to researchers via the UK Data Service (links: [NCDS](https://doi.org/10.5255/UKDA-Series-2000032), [BCS70](https://doi.org/10.5255/UKDA-Series-200001), [Next Steps](https://doi.org/10.5255/UKDA-Series-2000030), and [MCS](https://doi.org/10.5255/UKDA-Series-2000031)). This includes a series of harmonized measures created by [CLOSER](https://doi.org/10.5255/UKDA-Series-2000111). Most of the UKDS data is available via the least restrictive End User Licence, though more sensitive variables, such as low-level geographies, are available by Special Licence or Secure Access only. 
 
-Further, some data, such as raw genetic data and biological samples, is only available by application to CLS directly. More information is available on the [CLS website](https://cls.ucl.ac.uk/data-access-training/data-access/).
+Further, some data, such as raw genetic data and biological samples, are only available by application to CLS directly. More information is available on the [CLS website](https://cls.ucl.ac.uk/data-access-training/data-access/).

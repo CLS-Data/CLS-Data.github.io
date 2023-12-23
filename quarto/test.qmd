@@ -1,0 +1,12 @@
+---
+layout: default
+title: "A Fake Site"
+nav_order: 7
+format: docusaurus-md
+---
+
+Test
+
+```{r}
+library(tidyverse)
+```
