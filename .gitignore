@@ -16,3 +16,6 @@ vendor/
 .Rproj.user
 
 /.quarto/
+
+# Ignore R environment
+.Renviron

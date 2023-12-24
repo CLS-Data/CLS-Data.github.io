@@ -1,0 +1,35 @@
+---
+layout: default
+title: "Creating Per-Sweep Folders"
+nav_order: 1
+parent: Miscellaneous
+format: docusaurus-md
+---
+
+# Introduction
+
+This page shows code for taking UKDS zipped files, unzipping them and placing in per-sweep folders. For this code to work, you should download UKDS Stata files for a single study.
+
+To begin you will need to create a folder, XX. Alternatively, this code can be downloaded by cloning the this GitHub repository, saving, opening the `.Rpoj` file
+
+```{r}
+#| echo: false
+#| include: false
+# curr_dir <- getwd()
+# setwd(Sys.getenv("mcs_fld"))
+```
+
+```{r}
+#| include: false
+
+library(tidyverse)
+library(haven)
+```
+
+Why is this not working?
+
+```{r}
+df <- read_dta("3y/mcs2_cm_interview.dta")
+df
+```
+
