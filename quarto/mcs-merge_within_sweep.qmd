@@ -1,0 +1,114 @@
+---
+layout: default
+title: "Merge within sweep"
+nav_order: 2
+parent: MCS
+format: docusaurus-md
+---
+
+This page shows code for merging MCS files which use different data structures within a given sweep. In this demonstration, we will use data from sweep 2 (age 3y) of the survey.
+
+```{r}
+#| warning: false
+library(tidyverse)
+library(haven)
+```
+
+We will demonst
+
+```{r}
+family <- read_dta("mcs2_family_derived.dta")
+cm <- read_dta("mcs2_cm_derived.dta")
+parent <- read_dta("mcs2_parent_derived.dta")
+parent_cm <- read_dta("mcs2_parent_cm_interview.dta")
+hhgrid <- read_dta("mcs2_hhgrid.dta")
+```
+
+library(tidyverse)
+library(haven)
+
+setwd("/Users/liamwright/Documents/Data/MCS/3y")
+
+# 1. Load Data ----
+family <- read_dta("mcs2_family_derived.dta")
+cm <- read_dta("mcs2_cm_derived.dta")
+parent <- read_dta("mcs2_parent_derived.dta")
+parent_cm <- read_dta("mcs2_parent_cm_interview.dta")
+hhgrid <- read_dta("mcs2_hhgrid.dta")
+
+family
+cm
+parent
+parent_cm
+hhgrid
+
+# 2. Clean Data ----
+# family: BACTRY00 Country
+# cm: BDC08E00 Ethnicity 
+# parent_cm: BPOFRE00 Any parent reads to child 
+# parent_cm: BPPIAW00 Main / Secondary Career warm relationship with child
+# parent: BDD05S00 NS-SEC for the family
+# parent: BDDNVQ00 Parental Education (NVQ)
+# hhgrid: BHCREL00 Relationship to CM
+
+df_ethnic_group <- cm %>%
+  select(MCSID, BCNUM00, ethnic_group = BDC08E00)
+
+df_country <- family %>%
+  select(MCSID, country = BACTRY00)
+
+df_reads <- parent_cm %>%
+  select(MCSID, BPNUM00, BCNUM00, BPOFRE00) %>%
+  mutate(parent_reads = case_when(between(BPOFRE00, 1, 3) ~ 1,
+                                  between(BPOFRE00, 4, 6) ~ 0)) %>%
+  drop_na() %>%
+  group_by(MCSID, BCNUM00) %>%
+  summarise(parent_reads = max(parent_reads),
+            .groups = "drop")
+
+df_warm <- parent_cm %>%
+  select(MCSID, BCNUM00, BELIG00, BPPIAW00) %>%
+  mutate(variable = ifelse(BELIG00 == 1, "main_warm", "secondary_warm"),
+         value = case_when(BPPIAW00 == 5 ~ 1,
+                           between(BPPIAW00, 1, 6) ~ 0)) %>%
+  select(MCSID, BCNUM00, variable, value) %>%
+  pivot_wider(names_from = variable, values_from = value)
+
+df_nssec <- parent %>%
+  select(MCSID, BPNUM00, parent_nssec = BDD05S00) %>%
+  mutate(parent_nssec = if_else(parent_nssec < 0, NA, parent_nssec)) %>%
+  drop_na() %>%
+  group_by(MCSID) %>%
+  summarise(family_nssec = min(parent_nssec))
+
+hhgrid %>% count(BHCREL00)
+hhgrid %>% count(BHPSEX00)
+
+df_mother <- hhgrid %>%
+  select(MCSID, BPNUM00, BHCREL00, BHPSEX00) %>%
+  filter(between(BPNUM00, 1, 99),
+         BHCREL00 == 7,
+         BHPSEX00 == 2) %>%
+  distinct(MCSID, BPNUM00) %>%
+  add_count(MCSID) %>%
+  filter(n == 1) %>%
+  select(MCSID, BPNUM00)
+
+df_mother_edu <- parent %>%
+  select(MCSID, BPNUM00, mother_nvq = BDDNVQ00) %>%
+  right_join(df_mother, by = c("MCSID", "BPNUM00")) %>%
+  select(-BPNUM00)
+
+df_ethnic_group
+df_country
+df_reads
+df_warm
+df_nssec
+df_mother_edu
+
+df_ethnic_group %>%
+  left_join(df_country, by = "MCSID") %>%
+  left_join(df_reads, by = c("MCSID", "BCNUM00")) %>%
+  left_join(df_warm, by = c("MCSID", "BCNUM00")) %>%
+  left_join(df_nssec, by = "MCSID") %>%
+  left_join(df_mother_edu, by = "MCSID")
