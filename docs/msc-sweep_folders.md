@@ -2,7 +2,7 @@
 layout: default
 title: "Creating a Simple Folder Structure"
 nav_order: 1
-parent: Miscellaneous
+parent: MCS
 format: docusaurus-md
 ---
 
