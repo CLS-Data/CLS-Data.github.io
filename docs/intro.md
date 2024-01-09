@@ -15,7 +15,7 @@ The Centre for Longitudinal Studies (CLS) manages four cohort studies for which 
 
 This website provides `R` and `Stata` code for common data management tasks in each of the studies. This include merging files across survey sweeps, reshaping data from wide to long format, and using the correct variables to identify observational units (e.g., cohort members, families, parents, and so on).
 
-For background on these studies, please see cohort profile papers (linked above) and the [CLS website](https://cls.ucl.ac.uk/cls-studies/). Queries about the data can be sent to the [CLS Data team](mailto:clsdata@ucl.ac.uk). Queries and comments about this website can be directed to [Liam Wright](mailto:liam.wright@ucl.ac.uk).
+For background on these studies, please see cohort profile papers (linked above) and the [CLS website](https://cls.ucl.ac.uk/cls-studies/). Queries about the data can be sent to the [CLS Data team](mailto:clsdata@ucl.ac.uk). Queries, comments and requests about this website can be directed to [Liam Wright](mailto:liam.wright@ucl.ac.uk) or raised as an issue on the [GitHub repository page](https://github.com/CLS-Data/CLS-Data.github.io).
 
 # Data Access
 
@@ -27,3 +27,6 @@ Some data, such as raw genetic data and biological samples, are only available b
 The code presented on this website will presume you have downloaded the data from the UKDS in `Stata` (`.dta`) format. For historical reasons, data on the UKDS for the NCDS, BCS70 and MCS are separated by survey sweep. To get all of the survey data for a study, you therefore need to download multiple individual datasets. This can make merging data across sweeps a little challenging as the data as downloaded are dispersed across multiple folders. The file and folder names are also often not comprehensible.
 
 To make using the datasets easier, we provide code reorganise the `.dta` files into a simple directory structure with a folder for each sweep. This code is described under each study section (e.g., `MCS -> Creating a Simple Folder Structure`). We will assume you have organised the files in this way in other code we present.
+
+# GitHub Gist
+Study specific hashtag and `#britishcohorts`
