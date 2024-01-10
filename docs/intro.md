@@ -28,7 +28,7 @@ The code presented on this website will presume you have downloaded the data fro
 
 To make using the datasets easier, we provide code reorganise the `.dta` files into a simple directory structure with a folder for each sweep. This code is described under each study section (e.g., `MCS -> Creating a Simple Folder Structure`). We will assume you have organised the files in this way in other code we present.
 
-# GitHub Gist
+# Code Sharing
 This website can obviously not provide all the code you may need to carry out the analyses you may want to with CLS data. We have therefore set up the [`#britishcohorts` hashtag on GitHub Gist](https://gist.github.com/search?q=%23britishcohorts) for people to share code snippets that are useful for CLS analyses. Please consider sharing your own code snipetts (for instance, code to derive a useful variable) on GitHub Gist adding the `#britishcohorts` hashtag and a study specific hashtag (`#mcs`, `#bcs70`, `#nextsteps`, `#ncds`) to the Gist description to make it findable. 
 
-Please also consider sharing the full code for papers you publish on the [Open Science Framework website](https://osf.io) - it helps others reproduce your work and lowers the cost for others in learning CLS's data. You can add the tag 'british-cohorts' (plus a study-specific tag) to make your project findable.
+Please also consider sharing the full code for papers you publish on the [Open Science Framework website (OSF)](https://osf.io) - it helps others reproduce your work and lowers the cost for others in learning CLS's data. You can add the tag 'british-cohorts' (plus a study-specific tag) to make your project findable.
