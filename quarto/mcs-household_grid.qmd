@@ -84,8 +84,8 @@ df_0y_hhgrid_prel <- read_dta("0y/mcs1_hhgrid.dta") %>%
   select(MCSID, APNUM00, matches("AHPREL[A-Z]0"))
 
 df_0y_hhgrid_prel %>%
-  select(MCSID, APNUM00, AHPRELA0, AHPRELB0, AHPRELC0, AHPRELD0) %>%
-  filter(MCSID == "M10001N") # To look at just one family
+  filter(MCSID == "M10001N") %>% # To look at just one family
+  select(APNUM00, AHPRELA0, AHPRELB0, AHPRELC0)
 ```
 
 There are seven members in this family, one of whom is a cohort member (`APNUM00 == 100`). `APNUM00`'s 1 and 2 are the (natural) parents, and `APNUM00`'s 3-6 and 100 are the (natural) children. The relationship variables show that `APNUM00`'s 1 and 2 are married, and `APNUM00`'s 3-7 are siblings. Note, the symmetry in the relationships. Where, `APNUM00 == 1`, `AHPRELC0 == 7 [Natural Parent]` and where `APNUM00 == 3`, `AHPRELA0 == 3 [Natural Child]`.
@@ -99,7 +99,7 @@ df_0y_hhgrid_prel %>%
                values_to = "relationship") %>%
   mutate(APNUM00_alt = match(str_sub(alt, 7, 7), LETTERS)) %>%
   filter(relationship == 1) %>%
-  select(MCSID, APNUM00, parent_pnum = APNUM00_alt)
+  select(MCSID, APNUM00, partner_pnum = APNUM00_alt)
 ```
 
 # Coda

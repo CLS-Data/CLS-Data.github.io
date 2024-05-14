@@ -199,21 +199,21 @@ df_0y_hhgrid_prel <- read_dta("0y/mcs1_hhgrid.dta") %>%
   select(MCSID, APNUM00, matches("AHPREL[A-Z]0"))
 
 df_0y_hhgrid_prel %>%
-  select(MCSID, APNUM00, AHPRELA0, AHPRELB0, AHPRELC0, AHPRELD0) %>%
-  filter(MCSID == "M10001N") # To look at just one family
+  filter(MCSID == "M10001N") %>% # To look at just one family
+  select(APNUM00, AHPRELA0, AHPRELB0, AHPRELC0)
 ```
 
 ``` text
-# A tibble: 7 × 6
-  MCSID   APNUM00 AHPRELA0                  AHPRELB0           AHPRELC0 AHPRELD0
-  <chr>     <dbl> <dbl+lbl>                 <dbl+lbl>          <dbl+lb> <dbl+lb>
-1 M10001N       1 96 [Self]                  1 [Husband/Wife]   7 [Nat…  7 [Nat…
-2 M10001N       2  1 [Husband/Wife]         96 [Self]           7 [Nat…  7 [Nat…
-3 M10001N       3  3 [Natural son/daughter]  3 [Natural son/d… 96 [Sel… 11 [Nat…
-4 M10001N       4  3 [Natural son/daughter]  3 [Natural son/d… 11 [Nat… 96 [Sel…
-5 M10001N       5  3 [Natural son/daughter]  3 [Natural son/d… 11 [Nat… 11 [Nat…
-6 M10001N       6  3 [Natural son/daughter]  3 [Natural son/d… 11 [Nat… 11 [Nat…
-7 M10001N     100  3 [Natural son/daughter]  3 [Natural son/d… 11 [Nat… 11 [Nat…
+# A tibble: 7 × 4
+  APNUM00 AHPRELA0                  AHPRELB0                  AHPRELC0          
+    <dbl> <dbl+lbl>                 <dbl+lbl>                 <dbl+lbl>         
+1       1 96 [Self]                  1 [Husband/Wife]          7 [Natural paren…
+2       2  1 [Husband/Wife]         96 [Self]                  7 [Natural paren…
+3       3  3 [Natural son/daughter]  3 [Natural son/daughter] 96 [Self]         
+4       4  3 [Natural son/daughter]  3 [Natural son/daughter] 11 [Natural broth…
+5       5  3 [Natural son/daughter]  3 [Natural son/daughter] 11 [Natural broth…
+6       6  3 [Natural son/daughter]  3 [Natural son/daughter] 11 [Natural broth…
+7     100  3 [Natural son/daughter]  3 [Natural son/daughter] 11 [Natural broth…
 ```
 
 There are seven members in this family, one of whom is a cohort member
@@ -238,23 +238,23 @@ df_0y_hhgrid_prel %>%
                values_to = "relationship") %>%
   mutate(APNUM00_alt = match(str_sub(alt, 7, 7), LETTERS)) %>%
   filter(relationship == 1) %>%
-  select(MCSID, APNUM00, parent_pnum = APNUM00_alt)
+  select(MCSID, APNUM00, partner_pnum = APNUM00_alt)
 ```
 
 ``` text
 # A tibble: 23,616 × 3
-   MCSID   APNUM00 parent_pnum
-   <chr>     <dbl>       <int>
- 1 M10001N       1           2
- 2 M10001N       2           1
- 3 M10002P       1           2
- 4 M10002P       2           1
- 5 M10007U       1           2
- 6 M10007U       2           1
- 7 M10011Q       1           2
- 8 M10011Q       2           1
- 9 M10015U       1           2
-10 M10015U       2           1
+   MCSID   APNUM00 partner_pnum
+   <chr>     <dbl>        <int>
+ 1 M10001N       1            2
+ 2 M10001N       2            1
+ 3 M10002P       1            2
+ 4 M10002P       2            1
+ 5 M10007U       1            2
+ 6 M10007U       2            1
+ 7 M10011Q       1            2
+ 8 M10011Q       2            1
+ 9 M10015U       1            2
+10 M10015U       2            1
 # ℹ 23,606 more rows
 ```
 
