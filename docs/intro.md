@@ -13,9 +13,9 @@ The Centre for Longitudinal Studies (CLS) manages four cohort studies for which 
 3. [Next Steps](https://doi.org/10.5334/ohd.16), a cohort of English schoolchildren followed from age 13/14 and born in 1989/90.
 4. [The Millennium Cohort Study (MCS)](https://doi.org/10.1093/ije/dyu001), a birth cohort of individuals born in Britain in 2000/02.
 
-This website provides `R` and `Stata` code for common data management tasks in each of the studies. This include merging files across survey sweeps, reshaping data from wide to long format, and using the correct variables to identify observational units (e.g., cohort members, families, parents, and so on).
+This website provides `R` code for common data management tasks in each of the studies. This include merging files across survey sweeps, reshaping data from wide to long format, and using the correct variables to identify observational units (e.g., cohort members, families, parents, and so on). A separate website providing `Stata` code will be developed in due course.
 
-For background on these studies, please see cohort profile papers (linked above) and the [CLS website](https://cls.ucl.ac.uk/cls-studies/). Queries about the data can be sent to the [CLS Data team](mailto:clsdata@ucl.ac.uk). Queries, comments and requests about this website can be directed to [Liam Wright](mailto:liam.wright@ucl.ac.uk) or raised as an issue on the [GitHub repository page](https://github.com/CLS-Data/CLS-Data.github.io).
+For background on CLS' studies, please see cohort profile papers (linked above) and the [CLS website](https://cls.ucl.ac.uk/cls-studies/). Queries about the data can be sent to the [CLS Data team](mailto:clsdata@ucl.ac.uk). Queries, comments and requests about this website can be directed to [Liam Wright](mailto:liam.wright@ucl.ac.uk) or raised as an issue on the [GitHub repository page](https://github.com/CLS-Data/CLS-Data.github.io).
 
 # Data Access
 
@@ -24,9 +24,11 @@ Most of the data is available to researchers via the UK Data Service (links: [NC
 Some data, such as raw genetic data and biological samples, are only available by application to CLS directly. More information is available on the [CLS website](https://cls.ucl.ac.uk/data-access-training/data-access/).
 
 # Preliminaries
-The code presented on this website will presume you have downloaded the data from the UKDS in `Stata` (`.dta`) format. For historical reasons, data on the UKDS for the NCDS, BCS70 and MCS are separated by survey sweep. To get all of the survey data for a study, you therefore need to download multiple individual datasets. This can make merging data across sweeps a little challenging as the data as downloaded are dispersed across multiple folders. The file and folder names are also often not comprehensible.
+The code presented on this website will presume you have downloaded the data from the UKDS in `Stata` (`.dta`) format. For historical reasons, data on the UKDS for the NCDS, BCS70 and MCS are separated by survey sweep. To get all of the survey data for these studies, you therefore need to download multiple individual datasets. This can make merging data across sweeps a little challenging as the data as downloaded are dispersed across multiple folders. The file and folder names are also often not comprehensible.
 
 To make using the datasets easier, we provide code reorganise the `.dta` files into a simple directory structure with a folder for each sweep. This code is described under each study section (e.g., `MCS -> Creating a Simple Folder Structure`). We will assume you have organised the files in this way in other code we present.
+
+We use the `tidyverse` (an `R` package) extensively in the code presented on this website. Many of the functions we use are repeated in multiple places, so we have provided [a short primer](https://cls-data.github.io/docs/r_primer.html) on the main functions we will use. If you are new to the language, this primer also contains links to more detailed resources for learning `R` and `tidyverse`. Even if you are experienced with `R`, as there may still be some material that is new.
 
 # Code Sharing
 This website can obviously not provide all the code you may need to carry out the analyses you may want to with CLS data. We have therefore set up the [`#britishcohorts` hashtag on GitHub Gist](https://gist.github.com/search?q=%23britishcohorts) for people to share code snippets that are useful for CLS analyses. Please consider sharing your own code snipetts (for instance, code to derive a useful variable) on GitHub Gist adding the `#britishcohorts` hashtag and a study specific hashtag (`#mcs`, `#bcs70`, `#nextsteps`, `#ncds`) to the Gist description to make it findable. 

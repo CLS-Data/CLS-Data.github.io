@@ -2,7 +2,7 @@
 layout: default
 title: MCS
 has_children: true
-nav_order: 5
+nav_order: 6
 ---
 
-This section will be populated as soon as possible.
+This section presents code to clean and handle data from the Millennium Cohort Study (MCS). The MCS has the most complex data structures of CLS's cohorts, so we provide an [introduction to the data](https://cls-data.github.io/docs/mcs-data_structures.html) as necessary background.
