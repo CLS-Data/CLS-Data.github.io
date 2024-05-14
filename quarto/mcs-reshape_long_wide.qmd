@@ -35,7 +35,7 @@ load_height_wide <- function(sweep){
   prefix <- LETTERS[sweep]
   
   glue("{fup}y/mcs{sweep}_cm_interview.dta") %>%
-    read_dta(col_select = c("MCSID", matches("^.(CNUM00|CHTCM(A|0)0)"))) %>%
+    read_dta(col_select = c("MCSID", matches("^.(CNUM00|C(H|W)TCM(A|0)0)"))) %>%
     rename(cnum = matches("CNUM00"))
 }
 
