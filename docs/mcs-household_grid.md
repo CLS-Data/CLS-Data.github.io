@@ -267,6 +267,8 @@ on cohort-member and family-member’s dates of birth, which can be used
 to, for example, identify the number of resident younger siblings,
 determine maternal and paternal age at birth, and so on.
 
+# Footnotes
+
 [^1]: Loading the `.dta` files into `R` with `haven::read_dta()` retains
     the dataset metadata, including variable names and labels, mainly by
     storing variables as `labelled` class objects. See the [`labelled`

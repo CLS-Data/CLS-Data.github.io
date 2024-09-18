@@ -123,3 +123,5 @@ df_0y_hhgrid_prel %>%
 # Coda
 
 This only scratches the surface of what can be achieved with the household grid. The `mcs[1-7]_hhgrid.dta` files also contain information on cohort-member and family-member's dates of birth, which can be used to, for example, identify the number of resident younger siblings, determine maternal and paternal age at birth, and so on.
+
+# Footnotes
