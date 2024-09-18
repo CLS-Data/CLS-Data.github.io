@@ -126,3 +126,5 @@ The `mcs[1-7]_hhgrid.dta` files contain rosters of household members. There is a
 | ...     | ...           | ...                                 | ... |
 
 The household grid files also contain a variable, `[A-G]HCREL00`, which contains the relationship of the person (ego) to the cohort member (alter) in their family (i.e., whether they are a natural parent and so on). Further, there are variables that define relationships between non-cohort members (`[A-D]HPREL[A-Z]0` in `mcs[1-4]_hhgrid.dta`, `EPREL0[A-Z]00` in `mcs5_hhgrid.dta`, and `[F-G]HPREL0[A-Z]` in `mcs[6-7]_hhgrid.dta`). The letter `[A-Z]` in the variable name maps directly to a `[A-F]PNUM00`: `[A-D]HPRELA0` contains information on a person's relationship to the person with `[A-D]PNUM00 == 1`, `[A-D]HPRELB0` contains information on the relationship with `[A-D]PNUM00 == 2`, and so on. Given its complexity, the household grid files are described further in [*Working with the Household Grid*](https://cls-data.github.io/docs/mcs-household_grid.html).
+
+# Footnotes
