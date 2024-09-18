@@ -6,9 +6,36 @@ format: docusaurus-md
 ---
 
 # Introduction
-# The `tidyverse`
-# The pipe (`%>%`)
+
+In this page we provide a brief primer on the `R` programming language and the packages we use in the tutorials - notably, the `tidyverse`. We provide links to further resources on `R` and the `tidyverse` at the end of this page.
+
+# `R` and the `tidyverse`
+`R` is an open-source programming language and has a limited set of core functions installed as standard (collectively referred to a *Base R* after the `base` package). However, the functionality of `R` can be extended by installing and loading additional *packages*, which are developed by `R`'s very active, but decentralised, development community. As it is decentralised, the packages developers create often do not cohere or work well together - e.g., the objects produced by a function in one package may not straightforwardly input with the objects required by a function in another package.
+
+The `tidyverse` addresses this problem. The `tidyverse` is an extremely useful collection of package for data cleaning, analysis, and visualization, and includes popular packages such as `dplyr`, `ggplot2`, `tidyr`, and `purrr`. But beyond this, it is also a design philosophy: function names are self-explanatory, arguments are consistently named and ordered, and the output of one function is designed to be easily input into another. As this design philosophy is public, other developers can (and do!) create packages that work well alongside it.
+
+Two core features of the `tidyverse` are the extensive use of `tibbles` and the *pipe* (`%>%`). A `tibble` is a type a `data.frame` - a rectangular data structure, like a spreadsheet, with rows (observations) and columns (variables); many `tidyverse` functions expect a `tibble` (or `data.frame`) as the first input and output a `tibble` in turn. The pipe (`%>%`) is an operator that allows you to chain together multiple operations in a way that is easier to read and write. By default, the object or output of the function on the left hand side is "piped" into the first argument of the function of the right hand side (piping into other arguments can be achieved using the placeholder "`.`"). Below we load the `tidyverse`, and use the pipe with a few `dplyr` functions to clean and summarise the inbuilt `starwars` dataset.
+
+```{r}
+# install.packages("tidyverse") # Uncomment if you need to install
+library(tidyverse)
+
+starwars %>% 
+  mutate(height_m = height / 100, 
+         bmi = mass / (height_m ^ 2)) %>%
+  drop_na(bmi) %>% 
+  summarise(mean_bmi = mean(bmi), 
+            min_bmi = min(bmi), 
+            max_bmi = max(bmi))
+```
+
+Above, you will see that the `library(tidyverse)` command loads a set of packages, including `dplyr`, `readr` and `forcats`. These are the *core* `tidyverse` packages. `install.packages("tidyverse")` installs more packages than this - most notably, `haven` and `glue` - but these need to be loaded explicitly before use.
+
 # `haven::read_dta()` and the `labelled` package
+The CLS data is stored in Stata `.dta` files, and the `haven` package provides the `read_dta()` function to import these files into `R`. The `read_dta()` function is part of the `haven` package, which is part of the `tidyverse`. The `read_dta()` function is particularly useful as it imports the metadata from the Stata file, such as variable labels and value labels, and stores this information in the `labelled` class. This means that the metadata is retained when the data is imported into `R`, and can be accessed and used in subsequent data manipulation and analysis.
+
+`lookfor`, `val_labels`, and `var_labels` are functions from the `labelled` package that allow you to access the value labels and variable labels stored in the metadata of a `labelled` object. Below we import the `mcs2_cm_interview.dta` file and use the `lookfor()` function to find the variable labels for the `MCSID` and `CNUM00` variables.
+
 # Functions for Data Munging
 ## select/rename, mutate/summarise, filter, group_by()
 # tidyselect, stringr and Regular Expressions, pick()

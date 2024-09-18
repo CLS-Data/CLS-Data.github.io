@@ -1,6 +1,6 @@
 ---
 layout: default
-title: "Combining Data Across Sweeps"
+title: "Combining Data *Across* Sweeps"
 nav_order: 4
 parent: MCS
 format: docusaurus-md
@@ -8,11 +8,13 @@ format: docusaurus-md
 
 # Introduction
 
-In this tutorial, we will learn how to combine MCS data across sweeps. We will use data on cohort members' height, which was recorded in Sweeps 2-7 and is available in the `mcs[2-7]_cm_interview.dta` files. These files contain one row per cohort-member. As a reminder, we have organised the data files so that each sweep [has its own folder, which is named according to the age of follow-up](https://cls-data.github.io/docs/mcs-sweep_folders.html) (e.g., 3y for the second sweep).
+In this section, we show how to combine MCS data across sweeps, assuming the data to be merged are in a consistent format (e.g., one row per family); for information on munging data to have a consistent structure see the page [*Combining Data Within a Sweep*](https://cls-data.github.io/docs/mcs-merging_within_sweep.html) 
 
-We will begin by combining data from the second and third sweeps. We will show code to combine datasets in **wide** (one row per observational unit) and **long** (multiple rows per observational unit) formats by *merging* and *appending*, respectively. We will then explore how to combine data from multiple sweeps programmatically using the `dplyr` and `purrr` packages (from the `tidyverse`).
+To demonstrate, we will use data on cohort members' height, which was recorded in Sweeps 2-7 and is available in the `mcs[2-7]_cm_interview.dta` files. These files contain one row per cohort-member. As a reminder, we have organised the data files so that each sweep [has its own folder, which is named according to the age of follow-up](https://cls-data.github.io/docs/mcs-sweep_folders.html) (e.g., 3y for the second sweep).
 
-We will use the following packages:
+We begin by combining data from the second and third sweeps, showing how to combine these datasets in **wide** (one row per observational unit) and **long** (multiple rows per observational unit) formats by *merging* and *appending*, respectively. We will show how to combine data from multiple sweeps *programmatically* using the `dplyr` and `purrr` packages (from the `tidyverse`).
+
+We use the following packages:
 
 ```{r}
 #| warning: false
@@ -28,7 +30,7 @@ library(haven) # For importing .dta files
 
 # Merging Across Sweeps
 
-The variable `[B-G]CHTCM00` contains the height of the cohort member at each sweep (except for Sweep 5, where the variable is called `ECHTCMA0`). [The cohort-member identifiers are stored across two variables](https://cls-data.github.io/docs/mcs-data_structures.html) in the `mcs[2-7]_cm_interview.dta` files: `MCSID` and `[A-G]CNUM00`. `MCSID` is the family identifier and `[A-G]CNUM00` identifies the cohort member within the family. We will use the `read_dta()` function from the `haven` package to read in the data from the second and third sweeps, specifying the `col_select` argument to keep only the variables we need.
+The variable `[B-G]CHTCM00` contains the height of the cohort member at each sweep, except for Sweep 5, where the variable is called `ECHTCMA0`. [The cohort-member identifiers are stored across two variables](https://cls-data.github.io/docs/mcs-data_structures.html) in the `mcs[2-7]_cm_interview.dta` files: `MCSID` and `[A-G]CNUM00`. `MCSID` is the family identifier and `[A-G]CNUM00` identifies the cohort member within the family. We will use the `read_dta()` function from `haven` to read in the data from the second and third sweeps, specifying the `col_select` argument to keep only the variables we need.
 
 ```{r}
 df_3y <- read_dta("3y/mcs2_cm_interview.dta",
@@ -40,10 +42,10 @@ df_5y <- read_dta("5y/mcs3_cm_interview.dta",
 
 We can merge the data using the `*_join()` family of functions. These share a common syntax. They take two data frames (`x` and `y`) as arguments, as well as a `by` argument that specifies the variable(s) to join on. The `*_join()` functions are:
 
-1.  `full_join()`: Returns all rows from `x` and `y`, and all columns from `x` and `y`. Where there are not matching values, uses `NA` in the non-joining columns.
-2.  `inner_join()`: Returns all rows from `x` and `y` where there are matching values in both data frames.
-3.  `left_join()`: Returns all rows from `x`, and all columns from `x` and `y`. Rows in `x` with no match in `y` will have `NA` values in the new columns.
-4.  `right_join()`: Returns all rows from `y`, and all columns from `x` and `y`. Rows in `y` with no match in `x` will have `NA` values in the columns of `x` that are not used as identifiers.
+1.  `full_join()`: Returns all rows from `x` and `y`, and all columns from `x` and `y`. For rows without matches in both `x` and `y`, the missing value `NA` is used for columns that are not used as identifiers.
+2.  `inner_join()`: Returns all rows from `x` and `y` where there are matching rows in both data frames.
+3.  `left_join()`: Returns all rows from `x`, and all columns from `x` and `y`. Rows in `x` with no match in `y` will have `NA` values in the new columns from `y`.
+4.  `right_join()`: Returns all rows from `y`, and all columns from `x` and `y`. Rows in `y` with no match in `x` will have `NA` values in the columns of `x`.
 
 In the current context, where `x` is data from the second sweep (`df_3y`) and `y` is data from the third sweep (`df_5y`): `full_join()` will return a row for each individual present in the second or third sweeps, with the height from each sweep in the same row; `inner_join()` will return a row for each individual who was present in both sweeps, with the height from each sweep in the same row; `left_join()` will return a row for each individual in the second sweep, with the height from the third sweep in the same row if the individual was present in the third sweep; `right_join()` will return a row for each individual in the third sweep, with the height from the second sweep in the same row if the individual was present in the second sweep.
 

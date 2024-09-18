@@ -20,5 +20,6 @@ vendor/
 # Ignore R environment
 .Renviron
 
-# Ignore Notes
+# Ignore Notes and Old Files
 Notes/
+old/

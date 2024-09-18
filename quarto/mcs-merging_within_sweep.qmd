@@ -1,6 +1,6 @@
 ---
 layout: default
-title: "Combining Data Across Sweeps"
+title: "Combining Data *Within* a Sweep"
 nav_order: 4
 parent: MCS
 format: docusaurus-md
@@ -52,7 +52,7 @@ df_country <- family %>%
   select(MCSID, country = BACTRY00)
 ```
 
-Next, we will create a variable that indicates whether *any* parent reads to the cohort member We will use data from the `mcs2_parent_cm_interview` dataset, which contains a variable for the parent's reading habit (`BPOFRE00`). We first create a binary variable that indicates whether the parent reads to the cohort member at least once a week, and then create a summary variable indicating whether any (interviewed) parent reads (`max(parent_reads)`) using `summarise()` with `group_by(MCSID, BCNUM00)` to ensure this is calculated per cohort member. The result is a dataset with one row per cohort member with data on whether any parent reads to them.
+Next, we will create a variable that indicates whether *any* parent reads to the cohort member. We will use data from the `mcs2_parent_cm_interview` dataset, which contains a variable for the parent's reading habit to a given child (`BPOFRE00`). We first create a binary variable that indicates whether the parent reads to the cohort member at least once a week, and then create a summary variable indicating whether any (interviewed) parent reads (`max(parent_reads)`) using `summarise()` with `group_by(MCSID, BCNUM00)` to ensure this is calculated per cohort member. The result is a dataset with one row per cohort member with data on whether any parent reads to them.
 
 
 ```{r}

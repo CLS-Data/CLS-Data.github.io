@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Combining Data Across Sweeps
+title: Combining Data *Within* Sweeps
 nav_order: 4
 parent: MCS
 format: docusaurus-md
@@ -11,23 +11,10 @@ format: docusaurus-md
 
 # Introduction
 
-In this tutorial, we will learn how to combine MCS data across sweeps.
-We will use data on cohort members’ height, which was recorded in Sweeps
-2-7 and is available in the `mcs[2-7]_cm_interview.dta` files. These
-files contain one row per cohort-member. As a reminder, we have
-organised the data files so that each sweep [has its own folder, which
-is named according to the age of
-follow-up](https://cls-data.github.io/docs/mcs-sweep_folders.html)
-(e.g., 3y for the second sweep).
-
-We will begin by combining data from the second and third sweeps. We
-will show code to combine datasets in **wide** (one row per
-observational unit) and **long** (multiple rows per observational unit)
-formats by *merging* and *appending*, respectively. We will then explore
-how to combine data from multiple sweeps programmatically using the
-`dplyr` and `purrr` packages (from the `tidyverse`).
-
-We will use the following packages:
+In this tutorial, we will learn how to merge, collapse and reshape
+various data structures from a given sweep of the Millennium Cohort
+Study (MCS) to create a dataset at the cohort member level (one row per
+cohort member). We will use the following packages:
 
 ```r
 # Load Packages
@@ -35,582 +22,204 @@ library(tidyverse) # For data manipulation
 library(haven) # For importing .dta files
 ```
 
-# Merging Across Sweeps
-
-The variable `[B-G]CHTCM00` contains the height of the cohort member at
-each sweep (except for Sweep 5, where the variable is called
-`ECHTCMA0`). [The cohort-member identifiers are stored across two
-variables](https://cls-data.github.io/docs/mcs-data_structures.html) in
-the `mcs[2-7]_cm_interview.dta` files: `MCSID` and `[A-G]CNUM00`.
-`MCSID` is the family identifier and `[A-G]CNUM00` identifies the cohort
-member within the family. We will use the `read_dta()` function from the
-`haven` package to read in the data from the second and third sweeps,
-specifying the `col_select` argument to keep only the variables we need.
+The datasets we will use are:
 
 ```r
-df_3y <- read_dta("3y/mcs2_cm_interview.dta",
-                  col_select = c("MCSID", "BCNUM00", "BCHTCM00"))
-
-df_5y <- read_dta("5y/mcs3_cm_interview.dta",
-                  col_select = c("MCSID", "CCNUM00", "CCHTCM00"))
+family <- read_dta("3y/mcs2_family_derived.dta") # One row per family
+cm <- read_dta("3y/mcs2_cm_derived.dta") # One row per cohort member
+parent <- read_dta("3y/mcs2_parent_derived.dta") # One row per parent (responding)
+parent_cm <- read_dta("3y/mcs2_parent_cm_interview.dta") # One row per parent (responding) per cohort member
+hhgrid <- read_dta("3y/mcs2_hhgrid.dta") # One row per household member
 ```
 
-We can merge the data using the `*_join()` family of functions. These
-share a common syntax. They take two data frames (`x` and `y`) as
-arguments, as well as a `by` argument that specifies the variable(s) to
-join on. The `*_join()` functions are:
+# Data Cleaning
 
-1.  `full_join()`: Returns all rows from `x` and `y`, and all columns
-    from `x` and `y`. Where there are not matching values, uses `NA` in
-    the non-joining columns.
-2.  `inner_join()`: Returns all rows from `x` and `y` where there are
-    matching values in both data frames.
-3.  `left_join()`: Returns all rows from `x`, and all columns from `x`
-    and `y`. Rows in `x` with no match in `y` will have `NA` values in
-    the new columns.
-4.  `right_join()`: Returns all rows from `y`, and all columns from `x`
-    and `y`. Rows in `y` with no match in `x` will have `NA` values in
-    the columns of `x` that are not used as identifiers.
+We will create a small dataset that contains information on: family
+country of residence, cohort member’s ethnicity, whether any parent
+reads to the child, the warmth of the relationship between the parent
+and the child, family social class (National Statistics Socio-economic
+Classification; NS-SEC), and mother’s highest education level.
+Constructing and combining these variables involves restructing the data
+in various ways.
 
-In the current context, where `x` is data from the second sweep
-(`df_3y`) and `y` is data from the third sweep (`df_5y`): `full_join()`
-will return a row for each individual present in the second or third
-sweeps, with the height from each sweep in the same row; `inner_join()`
-will return a row for each individual who was present in both sweeps,
-with the height from each sweep in the same row; `left_join()` will
-return a row for each individual in the second sweep, with the height
-from the third sweep in the same row if the individual was present in
-the third sweep; `right_join()` will return a row for each individual in
-the third sweep, with the height from the second sweep in the same row
-if the individual was present in the second sweep.
-
-The `*_join()` functions can handle multiple variables to join on, and
-can also handle situations where the identifiers have different names
-across `x` and `y`. To specify the identifiers, we pass a vector to the
-`by` argument. In this case, we pass a *named vector* so that `BCNUM00`
-in `df_3y` can be matched to `CCNUM00` in `df_5y`.
+We will begin with the simplest variables: cohort member’s ethnicity and
+family country of residence. Cohort member’s ethnicity is stored in a
+cohort-member level dataset already (`mcs2_cm_derived`), so it does not
+need further processing.
 
 ```r
-df_3y %>%
-  full_join(df_5y, by = c("MCSID", BCNUM00 = "CCNUM00"))
-```
+df_ethnic_group <- cm %>%
+  select(MCSID, BCNUM00, ethnic_group = BDC08E00)
 
-``` text
-# A tibble: 17,242 × 4
-   MCSID   BCNUM00                             BCHTCM00                 CCHTCM00
-   <chr>   <dbl+lbl>                           <dbl+lbl>                <dbl+lb>
- 1 M10001N 1 [1st Cohort Member of the family]  97                      114.    
- 2 M10002P 1 [1st Cohort Member of the family]  96                      110.    
- 3 M10007U 1 [1st Cohort Member of the family] 102                      118     
- 4 M10008V 1 [1st Cohort Member of the family]  -2 [No Measurement tak…  NA     
- 5 M10008V 2 [2nd Cohort Member of the family]  -2 [No Measurement tak…  NA     
- 6 M10011Q 1 [1st Cohort Member of the family] 106                      121     
- 7 M10014T 1 [1st Cohort Member of the family]  97                       NA     
- 8 M10015U 1 [1st Cohort Member of the family]  94                      110.    
- 9 M10016V 1 [1st Cohort Member of the family] 102                      118.    
-10 M10017W 1 [1st Cohort Member of the family]  99                      110.    
-# ℹ 17,232 more rows
-```
-
-```r
-df_3y %>%
-  inner_join(df_5y, by = c("MCSID", BCNUM00 = "CCNUM00"))
-```
-
-``` text
-# A tibble: 13,967 × 4
-   MCSID   BCNUM00                             BCHTCM00  CCHTCM00 
-   <chr>   <dbl+lbl>                           <dbl+lbl> <dbl+lbl>
- 1 M10001N 1 [1st Cohort Member of the family]  97       114.     
- 2 M10002P 1 [1st Cohort Member of the family]  96       110.     
- 3 M10007U 1 [1st Cohort Member of the family] 102       118      
- 4 M10011Q 1 [1st Cohort Member of the family] 106       121      
- 5 M10015U 1 [1st Cohort Member of the family]  94       110.     
- 6 M10016V 1 [1st Cohort Member of the family] 102       118.     
- 7 M10017W 1 [1st Cohort Member of the family]  99       110.     
- 8 M10018X 1 [1st Cohort Member of the family]  97       113.     
- 9 M10020R 1 [1st Cohort Member of the family]  97       112.     
-10 M10021S 1 [1st Cohort Member of the family]  90       108      
-# ℹ 13,957 more rows
-```
-
-```r
-df_3y %>%
-  left_join(df_5y, by = c("MCSID", BCNUM00 = "CCNUM00"))
-```
-
-``` text
-# A tibble: 15,778 × 4
-   MCSID   BCNUM00                             BCHTCM00                 CCHTCM00
-   <chr>   <dbl+lbl>                           <dbl+lbl>                <dbl+lb>
- 1 M10001N 1 [1st Cohort Member of the family]  97                      114.    
- 2 M10002P 1 [1st Cohort Member of the family]  96                      110.    
- 3 M10007U 1 [1st Cohort Member of the family] 102                      118     
- 4 M10008V 1 [1st Cohort Member of the family]  -2 [No Measurement tak…  NA     
- 5 M10008V 2 [2nd Cohort Member of the family]  -2 [No Measurement tak…  NA     
- 6 M10011Q 1 [1st Cohort Member of the family] 106                      121     
- 7 M10014T 1 [1st Cohort Member of the family]  97                       NA     
- 8 M10015U 1 [1st Cohort Member of the family]  94                      110.    
- 9 M10016V 1 [1st Cohort Member of the family] 102                      118.    
-10 M10017W 1 [1st Cohort Member of the family]  99                      110.    
-# ℹ 15,768 more rows
-```
-
-```r
-df_3y %>%
-  right_join(df_5y, by = c("MCSID", BCNUM00 = "CCNUM00"))
-```
-
-``` text
-# A tibble: 15,431 × 4
-   MCSID   BCNUM00                             BCHTCM00  CCHTCM00 
-   <chr>   <dbl+lbl>                           <dbl+lbl> <dbl+lbl>
- 1 M10001N 1 [1st Cohort Member of the family]  97       114.     
- 2 M10002P 1 [1st Cohort Member of the family]  96       110.     
- 3 M10007U 1 [1st Cohort Member of the family] 102       118      
- 4 M10011Q 1 [1st Cohort Member of the family] 106       121      
- 5 M10015U 1 [1st Cohort Member of the family]  94       110.     
- 6 M10016V 1 [1st Cohort Member of the family] 102       118.     
- 7 M10017W 1 [1st Cohort Member of the family]  99       110.     
- 8 M10018X 1 [1st Cohort Member of the family]  97       113.     
- 9 M10020R 1 [1st Cohort Member of the family]  97       112.     
-10 M10021S 1 [1st Cohort Member of the family]  90       108      
-# ℹ 15,421 more rows
-```
-
-# Appending Sweeps
-
-To put the data into long format, we can use the `bind_rows()` function.
-To work properly, we need to name the variables consistently across
-sweeps, which in this case means removing the sweep-specific prefixes
-(i.e., the letter `B` from `df_3y` and the letter `C` from `df_5y`). We
-also need to add a variable to identify the sweep the data comes from.
-Below, we use the `mutate()` function to create a `sweep` variable and
-then use the `rename_with()` function to remove the prefixes and rename
-the variables consistently across sweeps.
-
-```r
-df_3y_nopre <- df_3y %>%
-  mutate(sweep = 2, .before = 1) %>%
-  rename_with(~ str_remove(.x, "^B"))
-
-df_5y_nopre <- df_5y %>%
-  mutate(sweep = 3, .before = 1) %>%
-  rename_with(~ str_remove(.x, "^C"))
-```
-
-`rename_with()` applies a function to the names of the variables. In
-this case, we use the `str_remove()` function from the `stringr` package
-(part of the `tidyverse`) to remove the prefix from the variable names.
-The `~` symbol is used to create an *anonymous function*, which is
-applied to each variable name. The `.x` symbol in the anonymous function
-is a placeholder for the variable name. `str_remove()` takes a regular
-expression. The `^` symbol is used to match the start of the string (so
-`^C` removes the `C` where it is the first character in a variable
-name - this is necessary to avoid removing the `C` within, e.g.,
-`MCSID`). Note, for the `mutate()` call, the `.before` argument is used
-to specify the position of the new variable in the data frame - here we
-want it as the first column. Below we see what the formatted data frames
-look like:
-
-```r
-df_3y_nopre
-```
-
-``` text
-# A tibble: 15,778 × 4
-   sweep MCSID   CNUM00                              CHTCM00                   
-   <dbl> <chr>   <dbl+lbl>                           <dbl+lbl>                 
- 1     2 M10001N 1 [1st Cohort Member of the family]  97                       
- 2     2 M10002P 1 [1st Cohort Member of the family]  96                       
- 3     2 M10007U 1 [1st Cohort Member of the family] 102                       
- 4     2 M10008V 1 [1st Cohort Member of the family]  -2 [No Measurement taken]
- 5     2 M10008V 2 [2nd Cohort Member of the family]  -2 [No Measurement taken]
- 6     2 M10011Q 1 [1st Cohort Member of the family] 106                       
- 7     2 M10014T 1 [1st Cohort Member of the family]  97                       
- 8     2 M10015U 1 [1st Cohort Member of the family]  94                       
- 9     2 M10016V 1 [1st Cohort Member of the family] 102                       
-10     2 M10017W 1 [1st Cohort Member of the family]  99                       
-# ℹ 15,768 more rows
-```
-
-```r
-df_5y_nopre
-```
-
-``` text
-# A tibble: 15,431 × 4
-   sweep MCSID   CNUM00                              CHTCM00  
-   <dbl> <chr>   <dbl+lbl>                           <dbl+lbl>
- 1     3 M10001N 1 [1st Cohort Member of the family] 114.     
- 2     3 M10002P 1 [1st Cohort Member of the family] 110.     
- 3     3 M10007U 1 [1st Cohort Member of the family] 118      
- 4     3 M10011Q 1 [1st Cohort Member of the family] 121      
- 5     3 M10015U 1 [1st Cohort Member of the family] 110.     
- 6     3 M10016V 1 [1st Cohort Member of the family] 118.     
- 7     3 M10017W 1 [1st Cohort Member of the family] 110.     
- 8     3 M10018X 1 [1st Cohort Member of the family] 113.     
- 9     3 M10020R 1 [1st Cohort Member of the family] 112.     
-10     3 M10021S 1 [1st Cohort Member of the family] 108      
-# ℹ 15,421 more rows
-```
-
-Now the data have been prepared, we can use `bind_rows()` to append the
-data frames together. This will stack the data frames on top of each
-other, so the number of rows is equal to the sum of rows in the
-individual datasets. The `bind_rows()` function can handle data frames
-with different numbers of columns. Missing columns are filled with `NA`
-values.
-
-```r
-bind_rows(df_3y_nopre, df_5y_nopre)
-```
-
-``` text
-Warning: `..1$CHTCM00` and `..2$CHTCM00` have conflicting value labels.
-ℹ Labels for these values will be taken from `..1$CHTCM00`.
-✖ Values: -1
-```
-
-``` text
-# A tibble: 31,209 × 4
-   sweep MCSID   CNUM00                              CHTCM00                   
-   <dbl> <chr>   <dbl+lbl>                           <dbl+lbl>                 
- 1     2 M10001N 1 [1st Cohort Member of the family]  97                       
- 2     2 M10002P 1 [1st Cohort Member of the family]  96                       
- 3     2 M10007U 1 [1st Cohort Member of the family] 102                       
- 4     2 M10008V 1 [1st Cohort Member of the family]  -2 [No Measurement taken]
- 5     2 M10008V 2 [2nd Cohort Member of the family]  -2 [No Measurement taken]
- 6     2 M10011Q 1 [1st Cohort Member of the family] 106                       
- 7     2 M10014T 1 [1st Cohort Member of the family]  97                       
- 8     2 M10015U 1 [1st Cohort Member of the family]  94                       
- 9     2 M10016V 1 [1st Cohort Member of the family] 102                       
-10     2 M10017W 1 [1st Cohort Member of the family]  99                       
-# ℹ 31,199 more rows
-```
-
-# Combing Sweeps Programatically
-
-Combining sweeps manually can become tedious when you need to combine
-more than two sweeps together. Instead, [iterative
-programming](https://r4ds.hadley.nz/iteration) can be used automate the
-process. Below we show how to merge and append multiple sweeps together
-with very little code using the `purrr` package (part of the
-`tidyverse`).
-
-## Merging Programmatically
-
-Before merging the datasets together, we need to load the data for each
-sweep. We can do this by creating a function, `load_height_wide()`,
-which takes a single argument `sweep` and loads the height data for that
-sweep. The function uses the `glue()` function from the `glue` package
-to create the file path. We create and subset a vector of follow-up ages
-(`fups`) to identify the correct folder to obtain the
-`mcs{sweep}_cm_interview.dta` file from. The `glue()` function is used
-to create strings from `R` objects. The curly braces (`{}`) act as
-placeholders for variables or function calls that are computed when the
-string is evaluated - e.g., when `sweep = 1`,
-`{fup}y/mcs{sweep}_cm_interview.dta` = `0y/mcs1_cm_interview.dta`.
-(`fup` is determined by subsetting the relevant element in the vectors
-`fups`.) `glue` is part of the `tidyverse`, but is not a *core* package,
-so needs to be loaded explicitly.
-
-The file path is fed to the `read_dta()` function from the `haven`
-package to read in the data, with the `col_select` argument used to keep
-only the variables we need. Note we use a regular expression to select
-the `CNUM` and height variables as these have slightly different names
-each sweep. Typically variable names only differ on the sweep prefix
-used (`ACHTM00`, `BCHTM00`), but in Sweep 5 (age 11y), the name of the
-height variable (`ECHTCMA00`) diverges slightly from this pattern.
-Below, we also include a step to `rename()` the `[B-G]CNUM00` variable
-to `cnum` to ensure consistency across sweeps as this will make merging
-more straightforward later.
-
-```r
-library(glue)
-fups <- c(0, 3, 5, 7, 11, 14, 17)
-
-load_height_wide <- function(sweep){
-  fup <- fups[sweep]
-  prefix <- LETTERS[sweep]
-  
-  glue("{fup}y/mcs{sweep}_cm_interview.dta") %>%
-    read_dta(col_select = c("MCSID", matches("^.(CNUM00|CHTCM(A|0)0)"))) %>%
-    rename(cnum = matches("CNUM00"))
-}
-```
-
-To confirm the function is working correctly, let’s use it to load the
-data the second and third sweeps.
-
-```r
-load_height_wide(2)
+df_ethnic_group
 ```
 
 ``` text
 # A tibble: 15,778 × 3
-   MCSID   cnum                                BCHTCM00                  
-   <chr>   <dbl+lbl>                           <dbl+lbl>                 
- 1 M10001N 1 [1st Cohort Member of the family]  97                       
- 2 M10002P 1 [1st Cohort Member of the family]  96                       
- 3 M10007U 1 [1st Cohort Member of the family] 102                       
- 4 M10008V 1 [1st Cohort Member of the family]  -2 [No Measurement taken]
- 5 M10008V 2 [2nd Cohort Member of the family]  -2 [No Measurement taken]
- 6 M10011Q 1 [1st Cohort Member of the family] 106                       
- 7 M10014T 1 [1st Cohort Member of the family]  97                       
- 8 M10015U 1 [1st Cohort Member of the family]  94                       
- 9 M10016V 1 [1st Cohort Member of the family] 102                       
-10 M10017W 1 [1st Cohort Member of the family]  99                       
+   MCSID   BCNUM00                             ethnic_group       
+   <chr>   <dbl+lbl>                           <dbl+lbl>          
+ 1 M10001N 1 [1st Cohort Member of the family]  1 [White]         
+ 2 M10002P 1 [1st Cohort Member of the family]  1 [White]         
+ 3 M10007U 1 [1st Cohort Member of the family]  1 [White]         
+ 4 M10008V 1 [1st Cohort Member of the family]  1 [White]         
+ 5 M10008V 2 [2nd Cohort Member of the family]  1 [White]         
+ 6 M10011Q 1 [1st Cohort Member of the family]  2 [Mixed]         
+ 7 M10014T 1 [1st Cohort Member of the family]  1 [White]         
+ 8 M10015U 1 [1st Cohort Member of the family]  1 [White]         
+ 9 M10016V 1 [1st Cohort Member of the family]  1 [White]         
+10 M10017W 1 [1st Cohort Member of the family] -1 [Not applicable]
 # ℹ 15,768 more rows
 ```
 
-```r
-load_height_wide(3)
-```
-
-``` text
-# A tibble: 15,431 × 3
-   MCSID   cnum                                CCHTCM00 
-   <chr>   <dbl+lbl>                           <dbl+lbl>
- 1 M10001N 1 [1st Cohort Member of the family] 114.     
- 2 M10002P 1 [1st Cohort Member of the family] 110.     
- 3 M10007U 1 [1st Cohort Member of the family] 118      
- 4 M10011Q 1 [1st Cohort Member of the family] 121      
- 5 M10015U 1 [1st Cohort Member of the family] 110.     
- 6 M10016V 1 [1st Cohort Member of the family] 118.     
- 7 M10017W 1 [1st Cohort Member of the family] 110.     
- 8 M10018X 1 [1st Cohort Member of the family] 113.     
- 9 M10020R 1 [1st Cohort Member of the family] 112.     
-10 M10021S 1 [1st Cohort Member of the family] 108      
-# ℹ 15,421 more rows
-```
-
-Now, we could manually load and merge successively using multiple
-`load_height_wide()` and `full_join()` function calls. However, this is
-rather verbose.
+Family country of residence is stored in a family-level dataset
+(`mcs2_family_derived`). This also does not need any further processing
+at this stage. Later when we merge this with `df_ethnic_group`, we will
+perform a 1-to-many merge, so the data will be automatically repeated
+for cases where there are multiple cohort members in a family.
 
 ```r
-load_height_wide(2) %>%
-  full_join(load_height_wide(3), by = c("MCSID", "cnum")) %>%
-  full_join(load_height_wide(4), by = c("MCSID", "cnum")) %>%
-  full_join(load_height_wide(6), by = c("MCSID", "cnum")) %>%
-  full_join(load_height_wide(7), by = c("MCSID", "cnum"))
+df_country <- family %>%
+  select(MCSID, country = BACTRY00)
 ```
 
-``` text
-# A tibble: 17,568 × 7
-   MCSID   cnum                    BCHTCM00  CCHTCM00 DCHTCM00 FCHTCM00 GCHTCM00
-   <chr>   <dbl+lbl>               <dbl+lbl> <dbl+lb> <dbl+lb> <dbl+lb> <dbl+lb>
- 1 M10001N 1 [1st Cohort Member o…  97       114.     128.      NA       NA     
- 2 M10002P 1 [1st Cohort Member o…  96       110.     123      163.     174.    
- 3 M10007U 1 [1st Cohort Member o… 102       118      129      174.     181.    
- 4 M10008V 1 [1st Cohort Member o…  -2 [No …  NA       NA       NA       NA     
- 5 M10008V 2 [2nd Cohort Member o…  -2 [No …  NA       NA       NA       NA     
- 6 M10011Q 1 [1st Cohort Member o… 106       121      137       NA       NA     
- 7 M10014T 1 [1st Cohort Member o…  97        NA       NA       NA       NA     
- 8 M10015U 1 [1st Cohort Member o…  94       110.     122.     164.     169     
- 9 M10016V 1 [1st Cohort Member o… 102       118.     130      167      185.    
-10 M10017W 1 [1st Cohort Member o…  99       110.     121.      NA       NA     
-# ℹ 17,558 more rows
-```
-
-More efficiently, we can use the `map()` function from the `purrr`
-package (part of the `tidyverse`) to apply the `load_height_wide()`
-function to each sweep in turn. The `map()` function takes an object to
-be looped over as its first argument and a function to apply as its
-second argument. The function can be written as an anonymous function,
-similar to `rename_with()`. `.x` is a placeholder for the current
-elements of the object being looped over. The `map()` function returns
-the results as a `list`. (Variants of `map()` return other data types,
-as we will see shortly). Below we use `map()` to run
-`load_height_wide()` for sweeps 2-7. To save space, we do not print the
-output.
+Next, we will create a variable that indicates whether *any* parent
+reads to the cohort member We will use data from the
+`mcs2_parent_cm_interview` dataset, which contains a variable for the
+parent’s reading habit (`BPOFRE00`). We first create a binary variable
+that indicates whether the parent reads to the cohort member at least
+once a week, and then create a summary variable indicating whether any
+(interviewed) parent reads (`max(parent_reads)`) using `summarise()`
+with `group_by(MCSID, BCNUM00)` to ensure this is calculated per cohort
+member. The result is a dataset with one row per cohort member with data
+on whether any parent reads to them.
 
 ```r
-map(2:7, ~ load_height_wide(.x))
+df_reads <- parent_cm %>%
+  select(MCSID, BPNUM00, BCNUM00, BPOFRE00) %>%
+  mutate(parent_reads = case_when(between(BPOFRE00, 1, 3) ~ 1,
+                                  between(BPOFRE00, 4, 6) ~ 0)) %>%
+  drop_na() %>%
+  group_by(MCSID, BCNUM00) %>%
+  summarise(parent_reads = max(parent_reads),
+            .groups = "drop")
+
+df_reads
 ```
 
-To merge list of datasets returned by `map()` together, we can use the
-`reduce()` function from `purrr` package. `reduce()` has a similar
-syntax to `map()`: it takes an object as its first argument, and a
-function as its second argument. It applies the function to the first
-*two* elements of the list, and then progressively applies the function
-to the result and the next element of the list, until the list is
-finished. Below, we use `reduce()` to apply the `full_join()` function
-to the list of data frames. We specify `full_join()` in an anonymous
-function. `.x` and `.y` the first and second inputs, respectively. So,
-at the first iteration sweep 2 (`.x`) is merged with sweep 3 (`.y`), and
-at the second iteration, the result of the first iteration (`.x`) is
-merged with sweep 4 (`.y`). This is repeated until sweep 7 has been
-merged in.
+``` text
+# A tibble: 15,684 × 3
+   MCSID   BCNUM00                             parent_reads
+   <chr>   <dbl+lbl>                                  <dbl>
+ 1 M10001N 1 [1st Cohort Member of the family]            1
+ 2 M10002P 1 [1st Cohort Member of the family]            1
+ 3 M10007U 1 [1st Cohort Member of the family]            1
+ 4 M10008V 1 [1st Cohort Member of the family]            1
+ 5 M10008V 2 [2nd Cohort Member of the family]            1
+ 6 M10011Q 1 [1st Cohort Member of the family]            1
+ 7 M10014T 1 [1st Cohort Member of the family]            1
+ 8 M10015U 1 [1st Cohort Member of the family]            1
+ 9 M10016V 1 [1st Cohort Member of the family]            1
+10 M10017W 1 [1st Cohort Member of the family]            1
+# ℹ 15,674 more rows
+```
+
+We next create two separate variables for whether the responding parent
+has a warm relationship with the cohort member (`BPPIAW00`) again using
+the `mcs2_parent_cm_interview` dataset. As the data have one row per
+parent-cohort member combination, we need to create a variable
+indicating which parent is which, and then reshape the warmth variable
+from long to wide (one row per cohort member) using `pivot_wider()`.
+Again, result is a dataset with one row per cohort member with data on
+their relationship with each carer.
 
 ```r
-map(2:7, load_height_wide) %>%
-  reduce(~ full_join(.x, .y, by = c("MCSID", "cnum")))
+df_warm <- parent_cm %>%
+  select(MCSID, BCNUM00, BELIG00, BPPIAW00) %>%
+  mutate(variable = ifelse(BELIG00 == 1, "main_warm", "secondary_warm"),
+         value = case_when(BPPIAW00 == 5 ~ 1,
+                           between(BPPIAW00, 1, 6) ~ 0)) %>%
+  select(MCSID, BCNUM00, variable, value) %>%
+  pivot_wider(names_from = variable, values_from = value)
 ```
 
-``` text
-# A tibble: 17,614 × 8
-   MCSID   cnum           BCHTCM00  CCHTCM00 DCHTCM00 ECHTCMA0 FCHTCM00 GCHTCM00
-   <chr>   <dbl+lbl>      <dbl+lbl> <dbl+lb> <dbl+lb> <dbl+lb> <dbl+lb> <dbl+lb>
- 1 M10001N 1 [1st Cohort…  97       114.     128.      NA       NA       NA     
- 2 M10002P 1 [1st Cohort…  96       110.     123      144.     163.     174.    
- 3 M10007U 1 [1st Cohort… 102       118      129      154.     174.     181.    
- 4 M10008V 1 [1st Cohort…  -2 [No …  NA       NA       NA       NA       NA     
- 5 M10008V 2 [2nd Cohort…  -2 [No …  NA       NA       NA       NA       NA     
- 6 M10011Q 1 [1st Cohort… 106       121      137      168.      NA       NA     
- 7 M10014T 1 [1st Cohort…  97        NA       NA       NA       NA       NA     
- 8 M10015U 1 [1st Cohort…  94       110.     122.     143      164.     169     
- 9 M10016V 1 [1st Cohort… 102       118.     130      152.     167      185.    
-10 M10017W 1 [1st Cohort…  99       110.     121.      NA       NA       NA     
-# ℹ 17,604 more rows
-```
-
-## Appending Programmatically
-
-Programatically appending datasets together is slightly more
-straightforward as we can use a variant of `map()` called `map_dfr()`
-which instead of returning a list, returns a data frame by calling
-`bind_rows()` on the result in the background. First, we create a
-function, `load_height_long()`, to load the height data a given sweep,
-formatting it so that it can be appended to the other sweeps. The
-`rename_with()` function renames the variables to remove the
-sweep-specific prefixes. The relevant prefix is determined by subsetting
-the inbuilt `LETTERS` vectors, which contains the letters of the
-alphabet in upper case (`"A"`, `"B"`, `"C"`, …, `"Z"`; i.e.,
-`LETTERS[2]` returns `"B"`).
+Next, we want to create a variable for family social class (NS-SEC)
+using the `mcs2_parent_derived` dataset. This is a parent level dataset,
+and we will use the parent’s NS-SEC (`BDD05S00`) and take the minimum
+value for each family (lower values of `BDD05S00` indicate higher social
+class).
 
 ```r
-load_height_long <- function(sweep){
-  fup <- fups[sweep]
-  prefix <- LETTERS[sweep]
-  
-  glue("{fup}y/mcs{sweep}_cm_interview.dta") %>%
-    read_dta(col_select = c("MCSID", matches("^.(CNUM00|CHTCM(A|0)0)"))) %>%
-    rename_with(~ str_replace(.x, glue("^{prefix}"), "")) %>%
-    mutate(sweep = !!sweep, .before = 1)
-}
+df_nssec <- parent %>%
+  select(MCSID, BPNUM00, parent_nssec = BDD05S00) %>%
+  mutate(parent_nssec = if_else(parent_nssec < 0, NA, parent_nssec)) %>%
+  drop_na() %>%
+  group_by(MCSID) %>%
+  summarise(family_nssec = min(parent_nssec))
 ```
 
-To load data from sweeps 2-7 and append them together, we can use
-`map_dfr()` with the `load_height_long()` function. Note, if we just
-provide the name of the function to `map_dfr()` (and `map()`,
-`reduce()`, `rename_with()`, etc.), the current element of the object
-being looped over is inputted as the first argument to that function.
-(We could also have done this above, but anonymous functions are
-extremely useful when writing complex code and arguably clarify the
-action that is being done.)
+We will also create a variable for the mother’s highest education level
+using the `mcs2_parent_derived` dataset. We will filter for mothers only
+(`BHCREL00 == 7` \[Natural Parent\] and `BHPSEX00 == 2` \[Female\]) and
+select the variable highest education level (`BDDNVQ00`). We will then
+merge these two variables with the other variables we have created so
+far. We use `right_join()`, which gives a row for every mother in the
+dataset, regardless of whether they have education data (`right_join()`
+fills variables with `NA` where not observed).
 
 ```r
-map_dfr(2:7, load_height_long)
+df_mother <- hhgrid %>%
+  select(MCSID, BPNUM00, BHCREL00, BHPSEX00) %>%
+  filter(between(BPNUM00, 1, 99),
+         BHCREL00 == 7,
+         BHPSEX00 == 2) %>%
+  distinct(MCSID, BPNUM00) %>%
+  add_count(MCSID) %>%
+  filter(n == 1) %>%
+  select(MCSID, BPNUM00)
+
+df_mother_edu <- parent %>%
+  select(MCSID, BPNUM00, mother_nvq = BDDNVQ00) %>%
+  right_join(df_mother, by = c("MCSID", "BPNUM00")) %>%
+  select(-BPNUM00)
 ```
 
-``` text
-Warning: `..1$CHTCM00` and `..2$CHTCM00` have conflicting value labels.
-ℹ Labels for these values will be taken from `..1$CHTCM00`.
-✖ Values: -1
-```
+# Merging the Datasets
 
-``` text
-Warning: `..1$CHTCM00` and `..3$CHTCM00` have conflicting value labels.
-ℹ Labels for these values will be taken from `..1$CHTCM00`.
-✖ Values: -8 and -1
-```
-
-``` text
-Warning: `..1$CHTCM00` and `..5$CHTCM00` have conflicting value labels.
-ℹ Labels for these values will be taken from `..1$CHTCM00`.
-✖ Values: -1
-```
-
-``` text
-Warning: `..1$CHTCM00` and `..6$CHTCM00` have conflicting value labels.
-ℹ Labels for these values will be taken from `..1$CHTCM00`.
-✖ Values: -5 and -1
-```
-
-``` text
-# A tibble: 80,873 × 5
-   sweep MCSID   CNUM00                              CHTCM00             CHTCMA0
-   <int> <chr>   <dbl+lbl>                           <dbl+lbl>           <dbl+l>
- 1     2 M10001N 1 [1st Cohort Member of the family]  97                 NA     
- 2     2 M10002P 1 [1st Cohort Member of the family]  96                 NA     
- 3     2 M10007U 1 [1st Cohort Member of the family] 102                 NA     
- 4     2 M10008V 1 [1st Cohort Member of the family]  -2 [No Measuremen… NA     
- 5     2 M10008V 2 [2nd Cohort Member of the family]  -2 [No Measuremen… NA     
- 6     2 M10011Q 1 [1st Cohort Member of the family] 106                 NA     
- 7     2 M10014T 1 [1st Cohort Member of the family]  97                 NA     
- 8     2 M10015U 1 [1st Cohort Member of the family]  94                 NA     
- 9     2 M10016V 1 [1st Cohort Member of the family] 102                 NA     
-10     2 M10017W 1 [1st Cohort Member of the family]  99                 NA     
-# ℹ 80,863 more rows
-```
-
-# Coda: Merging Parent Level Files
-
-As discussed in the [Data Structures
-page](https://cls-data.github.io/docs/mcs-data_structures.html), the
-`mcs[1-7]_parent_*.dta` files contain identifiers for the respondent
-(`MCSID` and `[A-G]PNUM00`), but also for the type of interview they
-completed (`MCSID` and `[A-G]ELIG00`). We can use either of these to
-merge parent-level datasets together across sweeps. When doing so, it is
-sometimes worth keep the information on the other identifiers to retain
-information on the respondent or interview; for instance, this may help
-to determine why a variable was missing for an individual in a
-particular sweep.
+Now we have cleaned each variable, we can merge them together. The
+cleaned datasets are either at the family level (`df_country`,
+`df_nssec`, `df_mother_edu`) or cohort member level (`df_ethnic_group`,
+`df_reads`, `df_warm`). We begin with `df_ethnic_group` as this has all
+the cohort members (participating at Sweep 2) in it, and then use
+`left_join()` so these rows are kept (and no more are added). To merge
+with a family-level dataset, we use `left_join(..., by = "MCSID")` as
+`MCSID` is the unique identifier for each cohort member. For the cohort
+member level datasets, we use
+`left_join(..., by = c("MCSID", "BCNUM00"))` as the combination of
+`MCSID` and `BCNUM00` uniquely identifies cohort members.
 
 ```r
-df_parent_5y <- read_dta("5y/mcs3_parent_cm_interview.dta",
-                         col_select = c("MCSID", "CCNUM00", "CPNUM00", "CELIG00", "CPFRTP00"))
-
-df_parent_7y <- read_dta("7y/mcs4_parent_cm_interview.dta",
-                         col_select = c("MCSID", "DCNUM00", "DPNUM00", "DELIG00", "DPFRTP00"))
-
-df_parent_5y %>%
-  full_join(df_parent_7y, 
-             by = c("MCSID",
-                    "CCNUM00" = "DCNUM00",
-                    "CPNUM00" = "DPNUM00")) # Merge by person
+df_ethnic_group %>%
+  left_join(df_country, by = "MCSID") %>%
+  left_join(df_reads, by = c("MCSID", "BCNUM00")) %>%
+  left_join(df_warm, by = c("MCSID", "BCNUM00")) %>%
+  left_join(df_nssec, by = "MCSID") %>%
+  left_join(df_mother_edu, by = "MCSID")
 ```
 
 ``` text
-# A tibble: 27,861 × 7
-   MCSID   CPNUM00   CELIG00               CCNUM00     CPFRTP00 DELIG00 DPFRTP00
-   <chr>   <dbl+lbl> <dbl+lbl>             <dbl+lbl>   <dbl+lb> <dbl+l> <dbl+lb>
- 1 M10001N 1         1 [Main Interview]    1 [1st Coh…  2 [Two] 1 [Mai… 2 [Two] 
- 2 M10002P 1         1 [Main Interview]    1 [1st Coh…  3 [Thr… 1 [Mai… 3 [Thre…
- 3 M10002P 2         2 [Partner Interview] 1 [1st Coh… -1 [Not… 2 [Par… 3 [Thre…
- 4 M10007U 1         1 [Main Interview]    1 [1st Coh…  3 [Thr… 1 [Mai… 3 [Thre…
- 5 M10007U 2         2 [Partner Interview] 1 [1st Coh… -1 [Not… 2 [Par… 3 [Thre…
- 6 M10011Q 1         1 [Main Interview]    1 [1st Coh…  3 [Thr… 1 [Mai… 3 [Thre…
- 7 M10011Q 2         2 [Partner Interview] 1 [1st Coh… -1 [Not… 2 [Par… 3 [Thre…
- 8 M10015U 1         1 [Main Interview]    1 [1st Coh…  2 [Two] 1 [Mai… 1 [One] 
- 9 M10015U 2         2 [Partner Interview] 1 [1st Coh… -1 [Not… 2 [Par… 1 [One] 
-10 M10016V 1         1 [Main Interview]    1 [1st Coh…  2 [Two] 1 [Mai… 2 [Two] 
-# ℹ 27,851 more rows
-```
-
-```r
-df_parent_5y %>%
-  full_join(df_parent_7y, 
-            by = c("MCSID", 
-                   "CCNUM00" = "DCNUM00",
-                   "CELIG00" = "DELIG00"))  # Merge by interview type
-```
-
-``` text
-# A tibble: 27,770 × 7
-   MCSID   CPNUM00   CELIG00               CCNUM00     CPFRTP00 DPNUM00 DPFRTP00
-   <chr>   <dbl+lbl> <dbl+lbl>             <dbl+lbl>   <dbl+lb> <dbl+l> <dbl+lb>
- 1 M10001N 1         1 [Main Interview]    1 [1st Coh…  2 [Two] 1       2 [Two] 
- 2 M10002P 1         1 [Main Interview]    1 [1st Coh…  3 [Thr… 1       3 [Thre…
- 3 M10002P 2         2 [Partner Interview] 1 [1st Coh… -1 [Not… 2       3 [Thre…
- 4 M10007U 1         1 [Main Interview]    1 [1st Coh…  3 [Thr… 1       3 [Thre…
- 5 M10007U 2         2 [Partner Interview] 1 [1st Coh… -1 [Not… 2       3 [Thre…
- 6 M10011Q 1         1 [Main Interview]    1 [1st Coh…  3 [Thr… 1       3 [Thre…
- 7 M10011Q 2         2 [Partner Interview] 1 [1st Coh… -1 [Not… 2       3 [Thre…
- 8 M10015U 1         1 [Main Interview]    1 [1st Coh…  2 [Two] 1       1 [One] 
- 9 M10015U 2         2 [Partner Interview] 1 [1st Coh… -1 [Not… 2       1 [One] 
-10 M10016V 1         1 [Main Interview]    1 [1st Coh…  2 [Two] 1       2 [Two] 
-# ℹ 27,760 more rows
+# A tibble: 15,778 × 9
+   MCSID   BCNUM00    ethnic_group country parent_reads main_warm secondary_warm
+   <chr>   <dbl+lbl>  <dbl+lbl>    <dbl+l>        <dbl>     <dbl>          <dbl>
+ 1 M10001N 1 [1st Co…  1 [White]   2 [Wal…            1        NA             NA
+ 2 M10002P 1 [1st Co…  1 [White]   2 [Wal…            1         1              1
+ 3 M10007U 1 [1st Co…  1 [White]   2 [Wal…            1         0              1
+ 4 M10008V 1 [1st Co…  1 [White]   1 [Eng…            1         1              1
+ 5 M10008V 2 [2nd Co…  1 [White]   1 [Eng…            1         1              1
+ 6 M10011Q 1 [1st Co…  2 [Mixed]   1 [Eng…            1         1             NA
+ 7 M10014T 1 [1st Co…  1 [White]   3 [Sco…            1         1              1
+ 8 M10015U 1 [1st Co…  1 [White]   1 [Eng…            1         1              1
+ 9 M10016V 1 [1st Co…  1 [White]   4 [Nor…            1         1              1
+10 M10017W 1 [1st Co… -1 [Not app… 1 [Eng…            1        NA             NA
+# ℹ 15,768 more rows
+# ℹ 2 more variables: family_nssec <dbl+lbl>, mother_nvq <dbl+lbl>
 ```
