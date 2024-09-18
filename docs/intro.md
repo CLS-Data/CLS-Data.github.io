@@ -28,7 +28,7 @@ The code presented on this website will presume you have downloaded the data fro
 
 To make using the datasets easier, we provide code reorganise the `.dta` files into a simple directory structure with a folder for each sweep. This code is described under each study section (e.g., `MCS -> Creating a Simple Folder Structure`). We will assume you have organised the files in this way in other code we present.
 
-We use the `tidyverse` (an `R` package) extensively in the code presented on this website. If you are new to the `tidyverse`, we recommend Hadley Wickham and colleagues' book, R for Data Science, which is [available for free online](https://r4ds.had.co.nz/).
+We use the `tidyverse` (an `R` package) extensively in the code presented on this website. If you are new to the `tidyverse`, we recommend Hadley Wickham and colleagues' book *R for Data Science* which is [available for free online](https://r4ds.had.co.nz/). We also link to sections in this book, where relevant.
 
 # Code Sharing
 This website can obviously not provide all the code you may need to carry out the analyses you may want to with CLS data. We have therefore set up the [`#britishcohorts` hashtag on GitHub Gist](https://gist.github.com/search?q=%23britishcohorts) for people to share code snippets that are useful for CLS analyses. Please consider sharing your own code snippets (for instance, code to derive a useful variable) on GitHub Gist adding the `#britishcohorts` hashtag and a study specific hashtag (`#mcs`, `#bcs70`, `#nextsteps`, `#ncds`) to the Gist description to make it findable. 
