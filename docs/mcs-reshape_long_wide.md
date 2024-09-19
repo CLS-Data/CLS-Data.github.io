@@ -103,33 +103,7 @@ df_long <- df_wide %>%
   pivot_longer(cols = matches("C(H|W)TCM00"),
                names_to = c("sweep", ".value"),
                names_pattern = "(.)(.*)")
-```
 
-``` text
-Warning: `CCHTCM00` and `DCHTCM00` have conflicting value labels.
-ℹ Labels for these values will be taken from `CCHTCM00`.
-✖ Values: -8
-```
-
-``` text
-Warning: `CCHTCM00` and `GCHTCM00` have conflicting value labels.
-ℹ Labels for these values will be taken from `CCHTCM00`.
-✖ Values: -5
-```
-
-``` text
-Warning: `CCWTCM00` and `DCWTCM00` have conflicting value labels.
-ℹ Labels for these values will be taken from `CCWTCM00`.
-✖ Values: -8
-```
-
-``` text
-Warning: `CCWTCM00` and `GCWTCM00` have conflicting value labels.
-ℹ Labels for these values will be taken from `CCWTCM00`.
-✖ Values: -5
-```
-
-```r
 df_long
 ```
 
