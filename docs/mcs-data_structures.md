@@ -72,11 +72,11 @@ The parent files have a similar structure to the cohort member-level (`mcs[1-7]_
 | M10005C | 1             | ... |
 | ...     | ...           | ... |
 
-Like `[A-G]CNUM00`, `[A-G]PNUM00` on its own is not a unique identifier. It lists the person number within the family, so it has to be combined with `MCSID` to identify a particular individual. Again, like `[A-G]CNUM00`, `[A-G]PNUM00` has a sweep-specific prefix, but take the same value across sweeps for a given individual (i.e., it is persistent).
+Like `[A-G]CNUM00`, `[A-G]PNUM00` on its own is not a unique identifier. It lists the person number within the family, so it has to be combined with `MCSID` to identify a particular individual. Again, like `[A-G]CNUM00`, `[A-G]PNUM00` has a sweep-specific prefix, but takes the same value across sweeps for a given individual (i.e., it is persistent).
 
 The value of `[A-G]PNUM00` is partly arbitrary. It does not specify a particular relationship to a cohort member. Such relationships are determined in the household grid files, which we discuss further below. The `[A-G]PNUM00` does follow a convention, however. For non-cohort members, `[A-G]PNUM00` is a positive integer between 1 and 99. For cohort members, `[A-G]PNUM00` is equal to `[A-G]CNUM00` multiplied by 100; i.e. for the first cohort member in a family it is 100, and for the second it is 200.[^3] While cohort members have a `[A-G]PNUM00`, non-cohort members (parents or other household members) do not get a `[A-G]CNUM00`.
 
-[^3]: An exception to this is in `mcs6_hhgrid.dta` where for all cohort members `FPNUM00 == -1 [Not applicable]`.
+[^3]: Exceptions to this are `mcs[6-7]_hhgrid.dta` where for all cohort members `[F-G]PNUM00 == -1 [Not applicable]`.
 
 Again, as two variables are required to uniquely identify a parent, you may prefer to create a single, unique identifier variable by concatenating `MCSID` and `[A-G]PNUM00`.
 

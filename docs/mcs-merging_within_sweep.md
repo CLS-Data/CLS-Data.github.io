@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Combining Data Within a Sweep
+title: Combining Data Within A Sweep
 nav_order: 5
 parent: MCS
 format: docusaurus-md
@@ -82,7 +82,7 @@ Family country of residence is stored in a family-level dataset
 (`mcs2_family_derived`). This also does not need any further processing
 at this stage. Later when we merging this data with `df_ethnic_group`,
 we perform a 1-to-many merge, so the data will be automatically repeated
-for cases where there are multiple cohort members in a family.
+for cases where there are multiple cohort members in a family.[^1]
 
 ```r
 df_country <- family %>%
@@ -101,7 +101,7 @@ on a [grouped data
 frame](https://r4ds.hadley.nz/data-transform.html#groups)
 (`group_by(MCSID, BCNUM00)`) to ensure this is calculated per cohort
 member. The result is a dataset with one row per cohort member with data
-on whether any parent reads to them.[^1]
+on whether any parent reads to them.[^2]
 
 ```r
 df_reads <- parent_cm %>%
@@ -185,7 +185,7 @@ highest education level variable (`BDDNVQ00`) from the
 dataset, regardless of whether they have education data or not
 (`right_join()` fills variables with `NA` where [the retained row does
 not have a
-match](https://r4ds.hadley.nz/missing-values.html#sec-missing-implicit)).[^2]
+match](https://r4ds.hadley.nz/missing-values.html#sec-missing-implicit)).[^3]
 
 ```r
 df_mother <- hhgrid %>%
@@ -249,13 +249,21 @@ df_ethnic_group %>%
 
 # Footnotes
 
-[^1]: Below, for simplicity, we drop any rows with missing values
+[^1]: It is also possible to expand a family level dataset so that it
+    has as many rows as there are cohort-members in the family.
+    `mcs2_family_derived.dta` contains a variable, `BDNOCM00`, with this
+    information that can be used with the `tidyverse` function
+    `uncount(BDNOCM00)` to achieve this. (The dataset
+    `mcs_longitudinal_family_file` contains a variable `NOCMHH` which
+    holds similar information.)
+
+[^2]: Below, for simplicity, we drop any rows with missing values
     (`drop_na()` step). Proper analyses may opt to use a different rule,
     which may require merging in other information (e.g., setting the
     value to missing unless all resident parents have been interviewed
     and provided a valid response).
 
-[^2]: More detail on merging with `right_join()` (and other `*_join()`
+[^3]: More detail on merging with `right_join()` (and other `*_join()`
     variants) is provided in [*Combining Data Across
     Sweeps*](https://cls-data.github.io/docs/mcs-merging_across_sweeps.html),
     as well as [Chapter 19 of the R for Data Science

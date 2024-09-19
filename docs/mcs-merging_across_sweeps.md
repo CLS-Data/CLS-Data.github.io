@@ -380,7 +380,7 @@ variables as these have slightly different names each sweep. Typically
 variable names only differ on the sweep prefix used (`ACHTM00`,
 `BCHTM00`), but in Sweep 5 (age 11y), the name of the height variable
 (`ECHTCMA00`) diverged slightly from this pattern. Below, we also
-include a step to `rename()` the `[B-G]CNUM00` variable to `cnum` to
+include a step to `rename()` the `[B-G]CNUM00` variable to `CNUM00` to
 ensure consistency across sweeps as this will make merging more
 straightforward later.
 
@@ -394,7 +394,7 @@ load_height_wide <- function(sweep){
   
   glue("{fup}y/mcs{sweep}_cm_interview.dta") %>%
     read_dta(col_select = c("MCSID", matches("^.(CNUM00|CHTCM(A|0)0)"))) %>%
-    rename(cnum = matches("CNUM00"))
+    rename(CNUM00 = matches("CNUM00"))
 }
 ```
 
@@ -407,7 +407,7 @@ load_height_wide(2)
 
 ``` text
 # A tibble: 15,778 × 3
-   MCSID   cnum                                BCHTCM00                  
+   MCSID   CNUM00                              BCHTCM00                  
    <chr>   <dbl+lbl>                           <dbl+lbl>                 
  1 M10001N 1 [1st Cohort Member of the family]  97                       
  2 M10002P 1 [1st Cohort Member of the family]  96                       
@@ -428,7 +428,7 @@ load_height_wide(3)
 
 ``` text
 # A tibble: 15,431 × 3
-   MCSID   cnum                                CCHTCM00 
+   MCSID   CNUM00                              CCHTCM00 
    <chr>   <dbl+lbl>                           <dbl+lbl>
  1 M10001N 1 [1st Cohort Member of the family] 114.     
  2 M10002P 1 [1st Cohort Member of the family] 110.     
@@ -449,15 +449,15 @@ rather verbose:
 
 ```r
 load_height_wide(2) %>%
-  full_join(load_height_wide(3), by = c("MCSID", "cnum")) %>%
-  full_join(load_height_wide(4), by = c("MCSID", "cnum")) %>%
-  full_join(load_height_wide(6), by = c("MCSID", "cnum")) %>%
-  full_join(load_height_wide(7), by = c("MCSID", "cnum"))
+  full_join(load_height_wide(3), by = c("MCSID", "CNUM00")) %>%
+  full_join(load_height_wide(4), by = c("MCSID", "CNUM00")) %>%
+  full_join(load_height_wide(6), by = c("MCSID", "CNUM00")) %>%
+  full_join(load_height_wide(7), by = c("MCSID", "CNUM00"))
 ```
 
 ``` text
 # A tibble: 17,568 × 7
-   MCSID   cnum                    BCHTCM00  CCHTCM00 DCHTCM00 FCHTCM00 GCHTCM00
+   MCSID   CNUM00                  BCHTCM00  CCHTCM00 DCHTCM00 FCHTCM00 GCHTCM00
    <chr>   <dbl+lbl>               <dbl+lbl> <dbl+lb> <dbl+lb> <dbl+lb> <dbl+lb>
  1 M10001N 1 [1st Cohort Member o…  97       114.     128.      NA       NA     
  2 M10002P 1 [1st Cohort Member o…  96       110.     123      163.     174.    
@@ -504,12 +504,12 @@ merged in.
 
 ```r
 map(2:7, load_height_wide) %>%
-  reduce(~ full_join(.x, .y, by = c("MCSID", "cnum")))
+  reduce(~ full_join(.x, .y, by = c("MCSID", "CNUM00")))
 ```
 
 ``` text
 # A tibble: 17,614 × 8
-   MCSID   cnum           BCHTCM00  CCHTCM00 DCHTCM00 ECHTCMA0 FCHTCM00 GCHTCM00
+   MCSID   CNUM00         BCHTCM00  CCHTCM00 DCHTCM00 ECHTCMA0 FCHTCM00 GCHTCM00
    <chr>   <dbl+lbl>      <dbl+lbl> <dbl+lb> <dbl+lb> <dbl+lb> <dbl+lb> <dbl+lb>
  1 M10001N 1 [1st Cohort…  97       114.     128.      NA       NA       NA     
  2 M10002P 1 [1st Cohort…  96       110.     123      144.     163.     174.    
