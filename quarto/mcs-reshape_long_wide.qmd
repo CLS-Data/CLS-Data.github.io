@@ -47,7 +47,7 @@ df_wide <- map(3:7, load_height_wide) %>%
   reduce(~ full_join(.x, .y, by = c("MCSID", "CNUM00"))) %>%
   rename(ECHTCM00 = ECHTCMA0, ECWTCMA00 = ECWTCMA0)
 
-str(df_wide)
+df_wide
 ```
 
 `df_wide` has 12 columns. Besides, the identifiers, `MCSID` and `cnum`, there are 10 columns for height and weight measurements at each sweep. Each of these 10 columns is prefixed by a single letter indicating the sweep. We can reshape the dataset into long format (one row per person x sweep combination) using the `pivot_longer()` function so that the resulting data frame has five columns: two person identifiers, a variable for sweep, and variables for height and weight. We specify the columns to be reshaped using the `cols` argument, provide the new variable names in the `names_to` argument, and the pattern the existing column names take using the `names_pattern` argument. For `names_pattern` we specify `"(.)(.*)"`, which breaks the column name into two pieces: the first character (`"(.)"`) and the rest of the name (`"(.*)"`). `names_pattern` uses regular expressions. `.` matches single characters, and `.*` modifies this to make zero or more characters. As noted, the first character holds information on sweep; in the reshaped data frame the character is stored as a value in a new column `sweep`. `.value` is a placeholder for the new columns in the reshaped data frame that store the values from the columns selected by `cols`; these new columns are named using the second piece from `names_pattern` - in this case `CHTCM00` (height) and `CWTCM00` (weight).

@@ -55,68 +55,26 @@ df_wide <- map(3:7, load_height_wide) %>%
   reduce(~ full_join(.x, .y, by = c("MCSID", "CNUM00"))) %>%
   rename(ECHTCM00 = ECHTCMA0, ECWTCMA00 = ECWTCMA0)
 
-str(df_wide)
+df_wide
 ```
 
 ``` text
-tibble [16,618 × 12] (S3: tbl_df/tbl/data.frame)
- $ MCSID    : chr [1:16618] "M10001N" "M10002P" "M10007U" "M10011Q" ...
-  ..- attr(*, "label")= chr "MCS Research ID - Anonymised Family/Household Identifier"
-  ..- attr(*, "format.stata")= chr "%7s"
- $ CNUM00   : dbl+lbl [1:16618] 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1...
-   ..@ labels: Named num [1:3] 1 2 3
-   .. ..- attr(*, "names")= chr [1:3] "1st Cohort Member of the family" "2nd Cohort Member of the family" "3rd Cohort Member of the family"
-   ..@ label : chr "Cohort Member number within an MCS family"
- $ CCHTCM00 : dbl+lbl [1:16618] 114, 110, 118, 121, 110, 118, 110, 113, 112, 108, 11...
-   ..@ label       : chr "PHYS: Height in cms"
-   ..@ format.stata: chr "%12.0g"
-   ..@ labels      : Named num [1:5] -9 -8 -1 99998 99999
-   .. ..- attr(*, "names")= chr [1:5] "Refusal" "Don't Know" "Not applicable" "Refusal" ...
- $ CCWTCM00 : dbl+lbl [1:16618] 21.2, 19.2, 25.3, 32.9, 19.7, 23.0, 18.9, 19.4, 20.6...
-   ..@ label       : chr "PHYS: Weight in Kilograms"
-   ..@ format.stata: chr "%12.0g"
-   ..@ labels      : Named num [1:3] -9 -8 -1
-   .. ..- attr(*, "names")= chr [1:3] "Refusal" "Don't Know" "Not applicable"
- $ DCHTCM00 : dbl+lbl [1:16618] 128, 123, 129, 137, 122, 130, 121, 128, 123, 121,  N...
-   ..@ label       : chr "Height in cms"
-   ..@ format.stata: chr "%12.0g"
-   ..@ labels      : Named num [1:3] -9 -8 -1
-   .. ..- attr(*, "names")= chr [1:3] "Refusal" "Don''t Know" "Not applicable"
- $ DCWTCM00 : dbl+lbl [1:16618] 25.5, 26.2, 26.5, 51.2, 24.1, 29.0, 21.7, 22.0, 24.6...
-   ..@ label       : chr "Weight in Kilos"
-   ..@ format.stata: chr "%12.0g"
-   ..@ labels      : Named num [1:3] -9 -8 -1
-   .. ..- attr(*, "names")= chr [1:3] "Refusal" "Don''t Know" "Not applicable"
- $ ECHTCM00 : dbl+lbl [1:16618]  NA, 144, 154, 168, 143, 152,  NA, 150, 141, 147, 15...
-   ..@ label       : chr "Height in cms"
-   ..@ format.stata: chr "%12.0g"
-   ..@ labels      : Named num [1:2] -7 -1
-   .. ..- attr(*, "names")= chr [1:2] "No answer" "Not applicable"
- $ ECWTCMA00: dbl+lbl [1:16618]   NA, 41.8, 40.6, 74.0, 38.2, 41.5,   NA, 37.3, 33.8...
-   ..@ label       : chr "Weight in kilos"
-   ..@ format.stata: chr "%12.0g"
-   ..@ labels      : Named num [1:2] -7 -1
-   .. ..- attr(*, "names")= chr [1:2] "No answer" "Not applicable"
- $ FCHTCM00 : dbl+lbl [1:16618]  NA, 163, 174,  NA, 164, 167,  NA, 164, 161, 157, 16...
-   ..@ label       : chr "Height in centimeters"
-   ..@ format.stata: chr "%12.0g"
-   ..@ labels      : Named num [1:2] -5 -1
-   .. ..- attr(*, "names")= chr [1:2] "UNABLE TO OBTAIN HEIGHT MEASUREMENT" "Not applicable"
- $ FCWTCM00 : dbl+lbl [1:16618]   NA, 52.3, 57.1,   NA, 56.2, 51.5,   NA, 56.9, 46.8...
-   ..@ label       : chr "Weight in kilos"
-   ..@ format.stata: chr "%12.0g"
-   ..@ labels      : Named num [1:2] -5 -1
-   .. ..- attr(*, "names")= chr [1:2] "UNABLE TO OBTAIN HEIGHT MEASUREMENT" "Not applicable"
- $ GCHTCM00 : dbl+lbl [1:16618]  NA, 174, 181,  NA, 169, 185,  NA, 166,  NA, 157, 18...
-   ..@ label       : chr "Height in cms"
-   ..@ format.stata: chr "%12.0g"
-   ..@ labels      : Named num [1:2] -5 -1
-   .. ..- attr(*, "names")= chr [1:2] "Unable to obtain height measurement" "Not applicable"
- $ GCWTCM00 : dbl+lbl [1:16618]    NA,  59.4,  71.4,    NA,  75.7,  74.1,    NA,  56...
-   ..@ label       : chr "Weight in kilos"
-   ..@ format.stata: chr "%12.0g"
-   ..@ labels      : Named num [1:2] -5 -1
-   .. ..- attr(*, "names")= chr [1:2] "Unable to obtain weight measurement" "Not applicable"
+# A tibble: 16,618 × 12
+   MCSID CNUM00  CCHTCM00 CCWTCM00 DCHTCM00 DCWTCM00 ECHTCM00 ECWTCMA00 FCHTCM00
+   <chr> <dbl+l> <dbl+lb> <dbl+lb> <dbl+lb> <dbl+lb> <dbl+lb> <dbl+lbl> <dbl+lb>
+ 1 M100… 1 [1st… 114.     21.2     128.     25.5      NA      NA         NA     
+ 2 M100… 1 [1st… 110.     19.2     123      26.2     144.     41.8      163.    
+ 3 M100… 1 [1st… 118      25.3     129      26.5     154.     40.6      174.    
+ 4 M100… 1 [1st… 121      32.9     137      51.2     168.     74         NA     
+ 5 M100… 1 [1st… 110.     19.7     122.     24.1     143      38.2      164.    
+ 6 M100… 1 [1st… 118.     23       130      29       152.     41.5      167     
+ 7 M100… 1 [1st… 110.     18.9     121.     21.7      NA      NA         NA     
+ 8 M100… 1 [1st… 113.     19.4     128.     22       150.     37.3      164.    
+ 9 M100… 1 [1st… 112.     20.6     123      24.6     141.     33.8      161     
+10 M100… 1 [1st… 108      18.4     121      24.2     147      40.3      157     
+# ℹ 16,608 more rows
+# ℹ 3 more variables: FCWTCM00 <dbl+lbl>, GCHTCM00 <dbl+lbl>,
+#   GCWTCM00 <dbl+lbl>
 ```
 
 `df_wide` has 12 columns. Besides, the identifiers, `MCSID` and `cnum`,
