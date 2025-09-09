@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Combining Data Across Sweeps
-nav_order: 2
+nav_order: 3
 parent: NCDS
 format: docusaurus-md
 ---
