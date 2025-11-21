@@ -1,4 +1,12 @@
-# Working with the Household Grid
+---
+layout: default
+title: Working with the Household Grid
+nav_order: 4
+parent: MCS
+format:
+  gfm:
+    variant: +yaml_metadata_block
+---
 
 
 - [Download the R script for this page](../purl/mcs-household_grid.R)

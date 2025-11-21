@@ -3,9 +3,9 @@ layout: default
 title: "Combining Data Across Sweeps"
 nav_order: 5
 parent: MCS
-format:
+format: 
   gfm:
-    keep-yaml: true
+    variant: +yaml_metadata_block
 ---
 
 - [Download the R script for this page](../purl/mcs-merging_across_sweeps.R)

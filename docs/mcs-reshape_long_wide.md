@@ -1,4 +1,12 @@
-# Reshaping Data from Long to Wide (or Wide to Long)
+---
+layout: default
+title: Reshaping Data from Long to Wide (or Wide to Long)
+nav_order: 7
+parent: MCS
+format:
+  gfm:
+    variant: +yaml_metadata_block
+---
 
 
 - [Download the R script for this page](../purl/mcs-reshape_long_wide.R)

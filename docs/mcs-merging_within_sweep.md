@@ -1,4 +1,12 @@
-# Combining Data Within A Sweep
+---
+layout: default
+title: Combining Data Within A Sweep
+nav_order: 6
+parent: MCS
+format:
+  gfm:
+    variant: +yaml_metadata_block
+---
 
 
 - [Download the R script for this

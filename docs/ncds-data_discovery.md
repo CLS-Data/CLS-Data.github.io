@@ -1,4 +1,12 @@
-# Data Discovery
+---
+layout: default
+title: Data Discovery
+nav_order: 2
+parent: NCDS
+format:
+  gfm:
+    variant: +yaml_metadata_block
+---
 
 
 - [Download the R script for this page](../purl/ncds-data_discovery.R)

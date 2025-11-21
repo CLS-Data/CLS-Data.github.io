@@ -3,9 +3,9 @@ layout: default
 title: "Reshaping Data from Long to Wide (or Wide to Long)"
 nav_order: 4
 parent: BCS70
-format:
+format: 
   gfm:
-    keep-yaml: true
+    variant: +yaml_metadata_block
 ---
 
 - [Download the R script for this page](../purl/bcs70-reshape_long_wide.R)
