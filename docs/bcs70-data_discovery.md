@@ -1,4 +1,12 @@
-# Data Discovery
+---
+layout: default
+title: Data Discovery
+nav_order: 2
+parent: BCS70
+format:
+  gfm:
+    variant: +yaml_metadata_block
+---
 
 
 - [Download the R script for this page](../purl/bcs70-data_discovery.R)

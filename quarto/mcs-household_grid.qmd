@@ -3,7 +3,9 @@ layout: default
 title: "Working with the Household Grid"
 nav_order: 4
 parent: MCS
-format: gfm
+format:
+  gfm:
+    keep-yaml: true
 ---
 
 - [Download the R script for this page](../purl/mcs-household_grid.R)

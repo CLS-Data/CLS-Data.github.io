@@ -3,7 +3,9 @@ layout: default
 title: "Combining Data Across Sweeps"
 nav_order: 3
 parent: NCDS
-format: gfm
+format:
+  gfm:
+    keep-yaml: true
 ---
 
 - [Download the R script for this page](../purl/ncds-merging_across_sweeps.R)

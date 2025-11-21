@@ -3,7 +3,9 @@ layout: default
 title: "Data Discovery"
 nav_order: 2
 parent: NCDS
-format: gfm
+format:
+  gfm:
+    keep-yaml: true
 ---
 
 - [Download the R script for this page](../purl/ncds-data_discovery.R)
