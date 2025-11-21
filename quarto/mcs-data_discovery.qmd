@@ -1,0 +1,99 @@
+---
+layout: default
+title: "Data Discovery"
+nav_order: 2
+parent: MCS
+format: gfm
+---
+
+- [Download the R script for this page](../purl/mcs-data_discovery.R)
+- [Download the equivalent Stata script for this page](../do_files/mcs-data_discovery.do)
+
+# Introduction
+
+In this section, we show a few `R` functions for exploring MCS data; there's a lot of data in the MCS, so finding a specific variable can be challenging. Variables do not generally have names that are descriptive and there can be some slight changes in naming conventions across sweeps. (The variable for height in centimeters is `ECHTCMA0` in Sweep 5 but `[A-G]CHTCM00` in other sweeps, for example.) In what follows, we will use the `R` functions to find variables for cohort members' SDQ, which has been collected in many of the sweeps.
+
+The packages we will use are:
+
+```{r}
+#| warning: false
+# Load Packages
+library(tidyverse) # For data manipulation
+library(haven) # For importing .dta files
+library(labelled) # For searching imported datasets
+library(codebookr) # For creating .docx codebooks
+```
+
+```{r}
+#| include: false
+# setwd(Sys.getenv("mcs_fld"))
+```
+
+# `labelled::lookfor()`
+
+The `labelled` package contains functionality for attaching and examining metadata in dataframes (for instance, adding labels to variables [columns]). Beyond this, it also contains the `lookfor()` function, which replicates similar functionality in `Stata`. `lookfor()` also one to search for variables in a dataframe by keyword (regular expression); the function searches variable names as well as associated metadata. It returns an object containing matching variables, their labels, and their types, etc.. Below, we read in the MCS 17-year sweep (Sweep 7) CM-level derived data which contains derived variables (`17y/mcs7_cm_derived.dta`) and use `lookfor()` to search for variables related to the `"SDQ"` (Strengths and Difficulties Questionnaire).
+
+```{r}
+mcs_17y <- read_dta("17y/mcs7_cm_derived.dta")
+
+lookfor(mcs_17y, "sdq")
+```
+
+Users may consider it easier to create a tibble of the `lookfor()` output, which can be searched and filtered using `dplyr` functions. Below, we create a `tibble` (a type of `data.frame` with good printing defaults) of the `lookfor()` output and use `filter()` to find variables with `"sdq"` in their labels. Note, we convert both the variable names and labels to lower case to make the search case insensitive.
+
+```{r}
+mcs_17y_lookfor <- lookfor(mcs_17y) %>%
+  as_tibble() %>%
+  mutate(variable_low = str_to_lower(variable),
+         label_low = str_to_lower(label))
+
+mcs_17y_lookfor %>%
+  filter(str_detect(label_low, "sdq"))
+```
+
+# `codebookr::codebook()`
+
+The MCS datasets that are downloadable from the UK Data Service come bundled with data dictionaries within the `mrdoc` subfolder. However, these are limited in some ways. The `codebookr` package enables the creation of data dictionaries that are more customisable, and in our opinion, easy to read. Below we create a codebook for the MCS 17-year sweep derived variable dataset. These codebooks are intended to be saved and viewed in Microsoft Word.
+
+```{r}
+cdb <- codebook(mcs_17y)
+print(cdb, "mcs_17y_codebook.docx") # Saves as .docx (Word) file
+```
+
+A screenshot of the codebook is shown below.
+
+![Codebook created by codebookr::codebook()](../images/mcs-data_discovery.png)
+
+# Create a Lookup Table Across All Datasets
+
+Creating the `lookfor()` and `codebook()` one dataset at a time does not allow one to get a quick overview of the variables available in the MCS, including the sweeps repeatedly measured characteristics are available in. Below we create a `tibble`, `df_lookfor`, that contains `lookfor()` results for all the `.dta` files in the MCS folder.
+
+To do this, we create a function, `create_lookfor()`, that takes a file path to a `.dta` file, reads in the first row of the dataset (faster than reading the full dataset), and applies `lookfor()` to it. We call this function with a `mutate()` function call to create a set of lookups for every `.dta` file we can find in the MCS folder. `map()` loops over every value in the `file_path` column, creating a corresponding lookup table for that file, stored as a [`list-column`](https://r4ds.hadley.nz/rectangling.html#list-columns). `unnest()` expands the results out, so rather than have one row per `file_path`, we have one row per variable.
+
+```{r}
+create_lookfor <- function(file_path){
+  read_dta(file_path, n_max = 1) %>%
+    lookfor() %>%
+    as_tibble()
+}
+
+df_lookfor <- tibble(file_path = list.files(pattern = "\\.dta$", recursive = TRUE)) %>%
+  filter(!str_detect(file_path, "^UKDS")) %>%
+  mutate(lookfor = map(file_path, create_lookfor)) %>%
+  unnest(lookfor) %>%
+  mutate(variable_low = str_to_lower(variable),
+         label_low = str_to_lower(label)) %>%
+  separate(file_path, 
+           into = c("sweep", "file"), 
+           sep = "/", 
+           remove = FALSE) %>% 
+  relocate(file_path, pos, .after = last_col())
+```
+
+We can use the resulting object to search for variables with `"sdq"` in their labels.
+
+```{r}
+df_lookfor %>%
+  filter(str_detect(label_low, "sdq")) %>%
+  select(file, variable, label)
+```

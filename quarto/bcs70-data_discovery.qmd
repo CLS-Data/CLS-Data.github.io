@@ -1,0 +1,99 @@
+---
+layout: default
+title: "Data Discovery"
+nav_order: 2
+parent: BCS70
+format: gfm
+---
+
+- [Download the R script for this page](../purl/bcs70-data_discovery.R)
+- [Download the equivalent Stata script for this page](../do_files/bcs70-data_discovery.do)
+
+# Introduction
+
+In this section, we show a few `R` functions for exploring BCS70 data; as noted, historical sweeps of the BCS70 did not use modern metadata standards, so finding a specific variable can be challenging. Variables do not always have names that are descriptive or follow a consistent naming convention across sweeps. (The variable for cohort member sex in the `0y/bcs7072a.dta` file is `a0255`, for example.) In what follows, we will use the `R` functions to find variables on cohort members' smoking, which has been collected in many of the sweeps.
+
+The packages we will use are:
+
+```{r}
+#| warning: false
+# Load Packages
+library(tidyverse) # For data manipulation
+library(haven) # For importing .dta files
+library(labelled) # For searching imported datasets
+library(codebookr) # For creating .docx codebooks
+```
+
+```{r}
+#| include: false
+# setwd(Sys.getenv("mcs_fld"))
+```
+
+# `labelled::lookfor()`
+
+The `labelled` package contains functionality for attaching and examining metadata in dataframes (for instance, adding labels to variables [columns]). Beyond this, it also contains the `lookfor()` function, which replicates similar functionality in `Stata`. `lookfor()` also one to search for variables in a dataframe by keyword (regular expression); the function searches variable names as well as associated metadata. It returns an object containing matching variables, their labels, and their types, etc.. Below, we read in the BCS70 38-year sweep derived variable dataset (`38y/bcs8derived.dta`) and use `lookfor()` to search for variables which mention `"smok"` in their name or metadata.
+
+```{r}
+bcs70_38y <- read_dta("38y/bcs8derived.dta")
+
+lookfor(bcs70_38y, "smok|cigar")
+```
+
+Users may consider it easier to create a tibble of the `lookfor()` output, which can be searched and filtered using `dplyr` functions. Below, we create a `tibble` (a type of `data.frame` with good printing defaults) of the `lookfor()` output and use `filter()` to find variables with `"smok"` or `"cigar"` in their labels. Note, we convert both the variable names and labels to lower case to make the search case insensitive.
+
+```{r}
+bcs70_38y_lookfor <- lookfor(bcs70_38y) %>%
+  as_tibble() %>%
+  mutate(variable_low = str_to_lower(variable),
+         label_low = str_to_lower(label))
+
+bcs70_38y_lookfor %>%
+  filter(str_detect(label_low, "smok|cigar"))
+```
+
+# `codebookr::codebook()`
+
+The BCS70 datasets that are downloadable from the UK Data Service come bundled with data dictionaries within the `mrdoc` subfolder. However, these are limited in some ways. The `codebookr` package enables the creation of data dictionaries that are more customisable, and in our opinion, easier-to-read. Below we create a codebook for the BCS70 51-year sweep dataset. These codebooks are intended to be saved and viewed in Microsoft Word.
+
+```{r}
+cdb <- codebook(bcs70_38y)
+print(cdb, "bcs70_38y_codebook.docx") # Saves as .docx (Word) file
+```
+
+A screenshot of the codebook is shown below.
+
+![Codebook created by codebookr::codebook()](../images/bcs70-data_discovery.png)
+
+# Create a Lookup Table Across All Datasets
+
+Creating the `lookfor()` and `codebook()` one dataset at a time does not allow one to get a quick overview of the variables available in the BCS70, including the sweeps repeatedly measured characteristics are available in. Below we create a `tibble`, `df_lookfor`, that contains `lookfor()` results for all the `.dta` files in the BCS70 folder.
+
+To do this, we create a function, `create_lookfor()`, that takes a file path to a `.dta` file, reads in the first row of the dataset (faster than reading the full dataset), and applies `lookfor()` to it. We call this function with a `mutate()` function call to create a set of lookups for every `.dta` file we can find in the BCS70 folder. `map()` loops over every value in the `file_path` column, creating a corresponding lookup table for that file, stored as a [`list-column`](https://r4ds.hadley.nz/rectangling.html#list-columns). `unnest()` expands the results out, so rather than have one row per `file_path`, we have one row per variable.
+
+```{r}
+create_lookfor <- function(file_path){
+  read_dta(file_path, n_max = 1) %>%
+    lookfor() %>%
+    as_tibble()
+}
+
+df_lookfor <- tibble(file_path = list.files(pattern = "\\.dta$", recursive = TRUE)) %>%
+  filter(!str_detect(file_path, "^UKDS")) %>%
+  mutate(lookfor = map(file_path, create_lookfor)) %>%
+  unnest(lookfor) %>%
+  mutate(variable_low = str_to_lower(variable),
+         label_low = str_to_lower(label)) %>%
+  separate(file_path, 
+           into = c("sweep", "file"), 
+           sep = "/", 
+           remove = FALSE) %>% 
+  relocate(file_path, pos, .after = last_col())
+```
+
+We can use the resulting object to search for variables with `"smok"` or `"cigar"` in their labels.
+
+```{r}
+df_lookfor %>%
+  filter(str_detect(label_low, "smok|cigar")) %>%
+  select(file, variable, label)
+```
