@@ -23,3 +23,6 @@ vendor/
 # Ignore Notes and Old Files
 Notes/
 old/
+**/*.quarto_ipynb
+
+.review/
