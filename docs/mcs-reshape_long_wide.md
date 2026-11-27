@@ -10,8 +10,6 @@ format:
 
 
 - [Download the R script for this page](../purl/mcs-reshape_long_wide.R)
-- [Download the equivalent Stata script for this
-  page](../do_files/mcs-reshape_long_wide.do)
 
 # Introduction
 

@@ -11,8 +11,6 @@ format:
 
 - [Download the R script for this
   page](../purl/next_steps-household_grid.R)
-- [Download the equivalent Stata script for this
-  page](../do_files/next_steps-household_grid.do)
 
 # Introduction
 

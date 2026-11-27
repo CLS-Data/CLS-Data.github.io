@@ -43,11 +43,7 @@ add_download_link <- function(quarto_file){
   
   purl_file <- str_replace(quarto_file, "\\.qmd$", ".R") %>%
     file.path("purl", .)
-  do_file <- str_replace(quarto_file, "\\.qmd$", ".do") %>%
-    file.path("do_files", .)
-  download_links <- c(glue("- [Download the R script for this page](../{purl_file})"),
-                     glue("- [Download the equivalent Stata script for this page](../{do_file})")) %>%
-    glue_collapse("\n")
+  download_links <- glue("- [Download the R script for this page](../{purl_file})")
   
   if (!any(str_detect(qmd, "Download the R script for this page"))){
     qmd_download <- append(qmd, 
@@ -77,8 +73,7 @@ remove_download_link <- function(quarto_file){
   
   if (any(str_detect(qmd, "Download the R script for this page"))){
     qmd_remove <- tibble(line = qmd) %>%
-      filter(!str_detect(line, "Download the R script for this page"),
-             !str_detect(line, "Download the equivalent Stata script for this page")) %>%
+      filter(!str_detect(line, "Download the R script for this page")) %>%
       filter(!(line == "" & lead(line) == "")) %>%
       pull(line)
     

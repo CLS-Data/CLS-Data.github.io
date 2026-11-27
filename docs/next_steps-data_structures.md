@@ -11,8 +11,6 @@ format:
 
 - [Download the R script for this
   page](../purl/next_steps-data_structures.R)
-- [Download the equivalent Stata script for this
-  page](../do_files/next_steps-data_structures.do)
 
 # Introduction
 
