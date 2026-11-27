@@ -10,8 +10,6 @@ format:
 
 
 - [Download the R script for this page](../purl/bcs70-data_discovery.R)
-- [Download the equivalent Stata script for this
-  page](../do_files/bcs70-data_discovery.do)
 
 # Introduction
 

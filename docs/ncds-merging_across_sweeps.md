@@ -11,8 +11,6 @@ format:
 
 - [Download the R script for this
   page](../purl/ncds-merging_across_sweeps.R)
-- [Download the equivalent Stata script for this
-  page](../do_files/ncds-merging_across_sweeps.do)
 
 # Introduction
 

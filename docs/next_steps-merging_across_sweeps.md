@@ -11,8 +11,6 @@ format:
 
 - [Download the R script for this
   page](../purl/next_steps-merging_across_sweeps.R)
-- [Download the equivalent Stata script for this
-  page](../do_files/next_steps-merging_across_sweeps.do)
 
 # Introduction
 
