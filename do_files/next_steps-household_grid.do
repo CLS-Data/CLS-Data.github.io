@@ -11,7 +11,6 @@ bysort NSID: gen n = _N
 keep if n == 1
 drop n
 keep NSID W1HhID W1EmpStat
-save "temp_mothers.dta", replace
 
 * Mother's Employment
 tabulate W1EmpStat

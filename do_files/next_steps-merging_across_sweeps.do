@@ -11,7 +11,7 @@ save "temp_w4.dta", replace
 use "temp_w2.dta", clear
 merge 1:1 NSID using "temp_w4.dta"
 list NSID W2ghq12scr W4ghq12scr _merge in 1/10
-// Use `drop if _merge == x` or run `merge ..., keep(x)` to keep a specific type of match/non-match.
+// Use `keep if _merge == x` or run `merge ..., keep(x)` to keep a specific type of match/non-match.
 
 * Appending Sweeps
 use "temp_w2.dta", clear
