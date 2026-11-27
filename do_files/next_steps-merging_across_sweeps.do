@@ -99,9 +99,7 @@ capture program drop negative_to_na
 program define negative_to_na
 	syntax varlist(numeric)
 
-	foreach var of varlist `varlist' {
-		replace `var' = . if `var' < 0
-	}
+	recode `varlist' (min/-1 = .)
 end
 
 negative_to_na ghq12

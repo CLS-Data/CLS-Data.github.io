@@ -46,4 +46,5 @@ merge 1:1 NSID using "df_tenure.dta", keep(master match) nogenerate
 merge 1:1 NSID using "df_nssec.dta", keep(master match) nogenerate
 merge 1:1 NSID using "df_mother_nssec.dta", keep(master match) nogenerate
 merge 1:1 NSID using "df_siblings.dta", keep(master match) nogenerate
+set linesize 255 // Widens the output so that each row of the listing fits on one line
 list in 1/10
